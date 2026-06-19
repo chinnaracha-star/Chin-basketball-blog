@@ -1,4 +1,4 @@
-function NavBar() {
+export function NavBar() {
   return (
     <header className="px-5 py-4 sm:px-8 lg:px-16">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-lg border border-[#ddd7cd] bg-[#fdfcf9] px-4 py-3 shadow-sm">
@@ -24,5 +24,3 @@ function NavBar() {
     </header>
   );
 }
-
-export default NavBar;
