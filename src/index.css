@@ -294,7 +294,7 @@ body {
     font-weight: 600;
   }
 
-  .article-category button {
+  .article-category-trigger {
     display: flex;
     width: 100%;
     height: 58px;
@@ -308,5 +308,46 @@ body {
     font: inherit;
     font-size: 22px;
     font-weight: 500;
+  }
+
+  .article-category-trigger svg {
+    transition: transform 180ms ease;
+  }
+
+  .article-category-icon-open {
+    transform: rotate(180deg);
+  }
+
+  .article-category-menu {
+    margin-top: 8px;
+    overflow: hidden;
+    border: 1px solid #d8d2c9;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .article-category-option {
+    display: flex;
+    width: 100%;
+    min-height: 54px;
+    align-items: center;
+    border: 0;
+    border-bottom: 1px solid #eee9e2;
+    background: #fff;
+    padding: 0 18px;
+    color: #756f68;
+    font: inherit;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  .article-category-option:last-child {
+    border-bottom: 0;
+  }
+
+  .article-category-option-active {
+    background: #ded9d2;
+    color: #302c29;
   }
 }

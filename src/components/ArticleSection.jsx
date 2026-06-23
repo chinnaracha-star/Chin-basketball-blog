@@ -1,8 +1,17 @@
+import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
 const categories = ["Highlight", "NBA", "Inspiration", "General"];
 
 function ArticleSection() {
+  const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  const selectCategory = (category) => {
+    setActiveCategory(category);
+    setIsCategoryOpen(false);
+  };
+
   return (
     <section className="article-section">
       <div className="article-panel">
@@ -15,8 +24,9 @@ function ArticleSection() {
                 key={category}
                 type="button"
                 className={`article-tab ${
-                  category === "Highlight" ? "article-tab-active" : ""
+                  category === activeCategory ? "article-tab-active" : ""
                 }`}
+                onClick={() => selectCategory(category)}
               >
                 {category}
               </button>
@@ -34,10 +44,39 @@ function ArticleSection() {
 
           <div className="article-category">
             <p>Category</p>
-            <button type="button">
-              Highlight
-              <ChevronDown size={24} strokeWidth={1.7} />
+            <button
+              type="button"
+              className="article-category-trigger"
+              aria-expanded={isCategoryOpen}
+              aria-controls="mobile-category-menu"
+              onClick={() => setIsCategoryOpen((isOpen) => !isOpen)}
+            >
+              {activeCategory}
+              <ChevronDown
+                className={isCategoryOpen ? "article-category-icon-open" : ""}
+                size={24}
+                strokeWidth={1.7}
+              />
             </button>
+
+            {isCategoryOpen && (
+              <div id="mobile-category-menu" className="article-category-menu">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={`article-category-option ${
+                      category === activeCategory
+                        ? "article-category-option-active"
+                        : ""
+                    }`}
+                    onClick={() => selectCategory(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

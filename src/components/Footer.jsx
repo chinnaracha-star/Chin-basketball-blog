@@ -30,8 +30,8 @@ const contacts = [
 
 export function Footer() {
   return (
-    <footer className="px-5 pb-8 sm:px-8 lg:px-16">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 rounded-lg border border-[#ddd7cd] bg-[#fdfcf9] px-6 py-8 shadow-sm sm:px-10 md:flex-row md:items-center md:justify-between">
+    <footer className="border-t border-[#e3ded6] px-5 py-8 sm:px-8 lg:px-16">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-[#9a9187]">
             Get In Touch
