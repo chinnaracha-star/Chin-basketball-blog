@@ -2,8 +2,8 @@ import heroImg from "../assets/brunson.jpg";
 
 export function HeroSection() {
   return (
-    <section className="px-5 pb-12 pt-4 sm:px-8 lg:px-16 lg:pb-20">
-      <div className="mx-auto grid max-w-6xl items-center gap-8 rounded-lg bg-[#fdfcf9] px-6 py-10 shadow-sm sm:px-10 lg:grid-cols-[0.85fr_420px_0.8fr] lg:gap-10 lg:px-12">
+    <section className="px-5 pb-12 pt-10 sm:px-8 lg:px-16 lg:pb-20 lg:pt-12">
+      <div className="mx-auto grid max-w-6xl items-center gap-8 px-0 py-0 sm:px-0 lg:grid-cols-[0.85fr_420px_0.8fr] lg:gap-10">
         <div className="text-center lg:text-right">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#302c29] sm:text-5xl">
             Jalen
