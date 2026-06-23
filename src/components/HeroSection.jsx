@@ -1,4 +1,4 @@
-import heroImg from "../assets/brunson.jpg";
+import heroImg from "../assets/brunson-new.jpg";
 
 export function HeroSection() {
   return (
@@ -33,11 +33,11 @@ export function HeroSection() {
             -basketball
           </p>
           <h2 className="mt-3 text-lg font-bold leading-snug text-[#302c29]">
-            Brunson แซงหน้าลูก้าไปแล้ว
+            Brunson แซงหน้า Luka ไปแล้ว
           </h2>
           <p className="mt-5 text-sm leading-7 text-[#6f6860]">
-            ถ้าถามแฟนบาสเมื่อ 3 ปีก่อนว่าใครมีแววได้แหวนก่อนระหว่าง Luka
-            Doncic กับ Jalen Brunson 100% กาเลือกลูก้า
+            ถ้าถามแฟนบาสเมื่อ 3 ปีก่อนว่าใครมีแววได้แหวนก่อนระหว่าง Luka Doncic
+            กับ Jalen Brunson 100% กาเลือกลูก้า
           </p>
           <p className="mt-4 text-sm leading-7 text-[#6f6860]">
             กลายเป็นผิดคาดเพราะ Brunson ได้แชมป์ก่อนในฐานะผู้นำทีมตลาดใหญ่
@@ -46,8 +46,9 @@ export function HeroSection() {
             สยบเสียงวิจารณ์ ถูกยกระดับเป็นพวกเกรด A ทันที
           </p>
           <p className="mt-4 text-sm leading-7 text-[#6f6860]">
-            Bill Simmons นักวิเคราะห์ชื่อดังอวยว่าแซงหน้าลูก้าและคนอื่นอย่างพี่เครา,
-            Steve Nash, Jason Kidd, Chris Paul ไปเรียบร้อยแล้ว
+            Bill Simmons
+            นักวิเคราะห์ชื่อดังอวยว่าแซงหน้าลูก้าและคนอื่นอย่างพี่เครา, Steve
+            Nash, Jason Kidd, Chris Paul ไปเรียบร้อยแล้ว
           </p>
         </article>
       </div>

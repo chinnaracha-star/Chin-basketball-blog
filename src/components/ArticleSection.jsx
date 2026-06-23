@@ -1,17 +1,4 @@
-import { useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
-
-const categories = ["Highlight", "NBA", "Inspiration", "General"];
-
 function ArticleSection() {
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-
-  const selectCategory = (category) => {
-    setActiveCategory(category);
-    setIsCategoryOpen(false);
-  };
-
   return (
     <section className="article-section">
       <div className="article-panel">
@@ -19,18 +6,18 @@ function ArticleSection() {
 
         <div className="article-controls">
           <div className="article-tabs" aria-label="Article categories">
-            {categories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                className={`article-tab ${
-                  category === activeCategory ? "article-tab-active" : ""
-                }`}
-                onClick={() => selectCategory(category)}
-              >
-                {category}
-              </button>
-            ))}
+            <button type="button" className="article-tab article-tab-active">
+              Highlight
+            </button>
+            <button type="button" className="article-tab">
+              NBA
+            </button>
+            <button type="button" className="article-tab">
+              Inspiration
+            </button>
+            <button type="button" className="article-tab">
+              General
+            </button>
           </div>
 
           <label className="article-search">
@@ -39,44 +26,17 @@ function ArticleSection() {
               placeholder="Search"
               aria-label="Search articles"
             />
-            <Search size={18} strokeWidth={1.7} />
+            <span aria-hidden="true">Search</span>
           </label>
 
           <div className="article-category">
             <p>Category</p>
-            <button
-              type="button"
-              className="article-category-trigger"
-              aria-expanded={isCategoryOpen}
-              aria-controls="mobile-category-menu"
-              onClick={() => setIsCategoryOpen((isOpen) => !isOpen)}
-            >
-              {activeCategory}
-              <ChevronDown
-                className={isCategoryOpen ? "article-category-icon-open" : ""}
-                size={24}
-                strokeWidth={1.7}
-              />
-            </button>
-
-            {isCategoryOpen && (
-              <div id="mobile-category-menu" className="article-category-menu">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={`article-category-option ${
-                      category === activeCategory
-                        ? "article-category-option-active"
-                        : ""
-                    }`}
-                    onClick={() => selectCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            )}
+            <details className="article-category-menu">
+              <summary>Highlight</summary>
+              <a href="#">NBA</a>
+              <a href="#">Inspiration</a>
+              <a href="#">General</a>
+            </details>
           </div>
         </div>
       </div>
