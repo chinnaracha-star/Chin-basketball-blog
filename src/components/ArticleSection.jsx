@@ -13,7 +13,7 @@ function ArticleSection() {
               Highlight
             </button>
             <button type="button" className="article-tab">
-              Cat
+              NBA
             </button>
             <button type="button" className="article-tab">
               Inspiration
@@ -36,7 +36,7 @@ function ArticleSection() {
             <p>Category</p>
             <details className="article-category-menu">
               <summary>Highlight</summary>
-              <a href="#">Cat</a>
+              <a href="#">NBA</a>
               <a href="#">Inspiration</a>
               <a href="#">General</a>
             </details>
