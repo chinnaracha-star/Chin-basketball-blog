@@ -3,6 +3,7 @@ import githubIcon from "../assets/icons/github.svg";
 import googleIcon from "../assets/icons/google.svg";
 import lineIcon from "../assets/icons/line.svg";
 import linkedinIcon from "../assets/icons/linkedin.svg";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -40,9 +41,9 @@ export function Footer() {
           </ul>
         </div>
 
-        <a className="footer-home" href="#">
+        <Link className="footer-home" to="/">
           Home page
-        </a>
+        </Link>
       </div>
     </footer>
   );

@@ -1,13 +1,15 @@
+import { Link } from "react-router-dom";
+
 export function NavBar() {
   return (
     <header className="border-b border-[#e3ded6] px-5 py-3 sm:px-8 lg:px-16">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-0 py-0">
-        <a
-          href="#"
+        <Link
+          to="/"
           className="text-lg font-semibold tracking-tight text-[#302c29]"
         >
           NBA News
-        </a>
+        </Link>
 
         <div className="flex items-center gap-2">
           <button

@@ -1,14 +1,27 @@
+import { Route, Routes } from "react-router-dom";
 import { Footer, HeroSection, NavBar } from "./components";
 import ArticleSection from "./components/ArticleSection";
+import NotFoundPage from "./pages/NotFoundPage";
+import PostPage from "./pages/PostPage";
 
-function App() {
+function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-[#262321]">
+    <main className="site-layout">
       <NavBar />
       <HeroSection />
       <ArticleSection />
       <Footer />
     </main>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/post/:postId" element={<PostPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 

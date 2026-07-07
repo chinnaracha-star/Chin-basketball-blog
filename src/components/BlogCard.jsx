@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function BlogCard(props) {
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -8,13 +10,16 @@ function BlogCard(props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <a href="#" className="relative h-[212px] sm:h-[360px]">
+      <Link
+        to={`/post/${props.id}`}
+        className="relative h-[212px] sm:h-[360px]"
+      >
         <img
           className="h-full w-full rounded-md object-cover"
           src={props.image}
           alt={props.title}
         />
-      </a>
+      </Link>
 
       <div className="flex flex-col">
         <div className="flex">
@@ -23,11 +28,11 @@ function BlogCard(props) {
           </span>
         </div>
 
-        <a href="#">
+        <Link to={`/post/${props.id}`}>
           <h2 className="mb-2 line-clamp-2 text-start text-xl font-bold hover:underline">
             {props.title}
           </h2>
-        </a>
+        </Link>
 
         <p className="mb-4 line-clamp-3 flex-grow text-sm text-[#6f6860]">
           {props.description}
