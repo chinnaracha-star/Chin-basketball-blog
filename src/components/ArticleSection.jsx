@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { blogPosts } from "../data/blogPosts";
 import BlogCard from "./BlogCard";
 import {
@@ -11,6 +12,12 @@ import {
 const categories = ["Highlight", "NBA", "Inspiration", "General"];
 
 function ArticleSection() {
+  const [selectedCategory, setSelectedCategory] = useState("Highlight");
+  const filteredPosts =
+    selectedCategory === "Highlight"
+      ? blogPosts
+      : blogPosts.filter((post) => post.topic === selectedCategory);
+
   return (
     <section className="article-section">
       <div className="article-panel">
@@ -18,11 +25,14 @@ function ArticleSection() {
 
         <div className="article-controls">
           <div className="article-tabs" aria-label="Article categories">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <button
                 key={category}
                 type="button"
-                className={`article-tab ${index === 0 ? "article-tab-active" : ""}`}
+                className={`article-tab ${selectedCategory === category ? "article-tab-active" : ""}`}
+                aria-pressed={selectedCategory === category}
+                disabled={selectedCategory === category}
+                onClick={() => setSelectedCategory(category)}
               >
                 {category}
               </button>
@@ -40,7 +50,10 @@ function ArticleSection() {
 
           <div className="article-category">
             <p>Category</p>
-            <Select defaultValue="Highlight">
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger className="article-category-trigger">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
@@ -60,10 +73,17 @@ function ArticleSection() {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {blogPosts.map((post) => (
+        <div
+          className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2"
+          aria-live="polite"
+        >
+          {filteredPosts.map((post) => (
             <BlogCard key={post.id} {...post} />
           ))}
+
+          {filteredPosts.length === 0 && (
+            <p className="article-empty">No articles in this category yet.</p>
+          )}
         </div>
       </div>
     </section>

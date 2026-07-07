@@ -29,7 +29,7 @@ function BlogCard(props) {
         <div className="flex items-center text-sm text-[#302c29]">
           <img
             className="mr-2 h-8 w-8 rounded-full"
-            src="https://res.cloudinary.com/dcbpjtd1r/image/upload/v1728449784/my-blog-post/xgfy0xnvyemkklcqodkg.jpg"
+            src="https://scontent.fbkk28-1.fna.fbcdn.net/v/t39.30808-6/615568604_746001051885433_2812348847833214854_n.jpg?stp=dst-jpg_tt6&cstp=mx621x634&ctp=s621x634&_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=2nIuzhtDeQgQ7kNvwFgxMqi&_nc_oc=AdrKxgZ3svySexPTS19OauTkqlrMpoEoAvN_uZQkgWH7JvZjhJIjB9O4WBn1onH2FbQ&_nc_zt=23&_nc_ht=scontent.fbkk28-1.fna&_nc_gid=7Hdx0QwQcz6ng52YQl89lA&_nc_ss=7b2a8&oh=00_Af_pjVaPi1KSXn0ZHI51aG0SZCNzsaHZnzvoBrXrcaU6ZA&oe=6A484382"
             alt={props.author}
           />
           <span>{props.author}</span>
