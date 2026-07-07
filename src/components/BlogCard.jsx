@@ -1,4 +1,11 @@
 function BlogCard(props) {
+  const formattedDate = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(props.date));
+
   return (
     <div className="flex flex-col gap-4">
       <a href="#" className="relative h-[212px] sm:h-[360px]">
@@ -34,7 +41,7 @@ function BlogCard(props) {
           />
           <span>{props.author}</span>
           <span className="mx-2 text-gray-300">|</span>
-          <span>{props.date}</span>
+          <time dateTime={props.date}>{formattedDate}</time>
         </div>
       </div>
     </div>

@@ -220,6 +220,40 @@ body {
   text-align: center;
 }
 
+.article-view-more {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.article-view-more button {
+  border: 0;
+  background: transparent;
+  color: #302c29;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.article-view-more button:hover:not(:disabled) {
+  color: #817970;
+}
+
+.article-view-more button:disabled {
+  color: #817970;
+  cursor: wait;
+}
+
+.article-status {
+  margin: 32px 0 0;
+  text-align: center;
+}
+
+.article-error {
+  color: #b42318;
+}
+
 @media (min-width: 640px) {
   .article-section {
     padding-inline: 32px;
