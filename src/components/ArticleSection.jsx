@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import BlogCard from "./BlogCard";
 import {
   Select,
@@ -20,6 +21,20 @@ function ArticleSection() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setPosts([]);
+      setPage(1);
+      setHasMore(true);
+      setKeyword(searchTerm.trim());
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -37,6 +52,7 @@ function ArticleSection() {
               selectedCategory === "Highlight"
                 ? undefined
                 : selectedCategory,
+            keyword: keyword || undefined,
           },
           signal: controller.signal,
         });
@@ -62,7 +78,7 @@ function ArticleSection() {
     fetchPosts();
 
     return () => controller.abort();
-  }, [page, selectedCategory]);
+  }, [page, selectedCategory, keyword]);
 
   function handleCategoryChange(category) {
     if (category === selectedCategory) return;
@@ -100,14 +116,44 @@ function ArticleSection() {
             ))}
           </div>
 
-          <label className="article-search">
+          <div className="article-search">
             <input
               type="text"
               placeholder="Search"
               aria-label="Search articles"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              role="combobox"
+              aria-expanded={isSearchFocused && Boolean(keyword)}
+              aria-controls="article-search-results"
+              autoComplete="off"
             />
             <span aria-hidden="true">Search</span>
-          </label>
+
+            {isSearchFocused && keyword && (
+              <div
+                id="article-search-results"
+                className="article-search-results"
+                role="listbox"
+              >
+                {isLoading && <p>Searching...</p>}
+                {!isLoading && posts.length === 0 && <p>No articles found.</p>}
+                {!isLoading &&
+                  posts.map((post) => (
+                    <Link
+                      key={post.id}
+                      to={`/post/${post.id}`}
+                      role="option"
+                      onMouseDown={(event) => event.preventDefault()}
+                    >
+                      {post.title}
+                    </Link>
+                  ))}
+              </div>
+            )}
+          </div>
 
           <div className="article-category">
             <p>Category</p>

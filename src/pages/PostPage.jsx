@@ -3,8 +3,8 @@ import { Copy, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 import facebookIcon from "../assets/icons/facebook.svg";
-import lineIcon from "../assets/icons/line.svg";
 import linkedinIcon from "../assets/icons/linkedin.svg";
 import { Footer, NavBar } from "../components";
 import {
@@ -35,6 +35,18 @@ function PostPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+
+  const articleUrl = window.location.href;
+  const encodedArticleUrl = encodeURIComponent(articleUrl);
+
+  async function handleCopyLink() {
+    try {
+      await navigator.clipboard.writeText(articleUrl);
+      toast.success("Link copied to clipboard");
+    } catch {
+      toast.error("Unable to copy the link");
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -124,17 +136,37 @@ function PostPage() {
                 </button>
 
                 <div className="post-share-actions" aria-label="Share article">
-                  <button type="button" aria-label="Copy article link">
+                  <button
+                    type="button"
+                    aria-label="Copy article link"
+                    onClick={handleCopyLink}
+                  >
                     <Copy aria-hidden="true" /> <span>Copy</span>
                   </button>
-                  <a href="#" aria-label="Share on Facebook">
+                  <a
+                    href={`https://www.facebook.com/share.php?u=${encodedArticleUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Share on Facebook"
+                  >
                     <img src={facebookIcon} alt="" />
                   </a>
-                  <a href="#" aria-label="Share on LinkedIn">
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedArticleUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Share on LinkedIn"
+                  >
                     <img src={linkedinIcon} alt="" />
                   </a>
-                  <a href="#" aria-label="Share on Line">
-                    <img src={lineIcon} alt="" />
+                  <a
+                    href={`https://www.twitter.com/share?&url=${encodedArticleUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Share on X"
+                    className="post-share-x"
+                  >
+                    X
                   </a>
                 </div>
               </div>
