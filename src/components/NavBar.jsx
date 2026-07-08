@@ -12,18 +12,18 @@ export function NavBar() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <Link
+            to="/login"
             className="rounded-full border border-[#d8d2c9] bg-white px-4 py-2 text-xs font-medium text-[#4c4742] transition hover:bg-[#f3f0ea]"
           >
             Log in
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            to="/signup"
             className="rounded-full bg-[#262321] px-4 py-2 text-xs font-medium text-white transition hover:bg-[#3a3530]"
           >
             Sign up
-          </button>
+          </Link>
         </div>
       </nav>
     </header>

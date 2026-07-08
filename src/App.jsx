@@ -3,6 +3,8 @@ import { Footer, HeroSection, NavBar } from "./components";
 import ArticleSection from "./components/ArticleSection";
 import NotFoundPage from "./pages/NotFoundPage";
 import PostPage from "./pages/PostPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 
 function LandingPage() {
   return (
@@ -20,6 +22,8 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/post/:postId" element={<PostPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
