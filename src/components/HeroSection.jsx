@@ -4,6 +4,7 @@ export function HeroSection() {
   return (
     <section className="px-5 pb-12 pt-10 sm:px-8 lg:px-16 lg:pb-20 lg:pt-12">
       <div className="mx-auto grid max-w-6xl items-center gap-8 px-0 py-0 sm:px-0 lg:grid-cols-[0.85fr_420px_0.8fr] lg:gap-10">
+        {/* --- Hero Title และคำโปรยของเว็บไซต์ --- */}
         <div className="text-center lg:text-right">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#302c29] sm:text-5xl">
             Jalen
@@ -20,6 +21,7 @@ export function HeroSection() {
           </p>
         </div>
 
+        {/* --- รูปภาพหลัก --- */}
         <div className="mx-auto aspect-[4/5] w-full max-w-[420px] overflow-hidden rounded-lg bg-[#ebe6dc] shadow-md">
           <img
             src={heroImg}
@@ -28,6 +30,7 @@ export function HeroSection() {
           />
         </div>
 
+        {/* --- เนื้อหาบทความแนะนำ --- */}
         <article className="mx-auto max-w-[310px] text-center lg:mx-0 lg:text-left">
           <p className="text-xs uppercase tracking-[0.28em] text-[#9a9187]">
             -basketball

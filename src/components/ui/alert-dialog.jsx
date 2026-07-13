@@ -1,9 +1,11 @@
 import { X } from "lucide-react";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 
+// --- Radix Primitives: นำ component พื้นฐานมาตั้งชื่อให้ใช้ได้สะดวกขึ้น ---
 const AlertDialog = AlertDialogPrimitive.Root;
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
+// --- Dialog Content: สร้าง Overlay และกล่องเนื้อหาที่แสดงทับหน้าเว็บ ---
 function AlertDialogContent({ children, className = "", ...props }) {
   return (
     <AlertDialogPrimitive.Portal>
@@ -18,6 +20,7 @@ function AlertDialogContent({ children, className = "", ...props }) {
   );
 }
 
+// --- Dialog Header: จัดกลุ่มหัวข้อและคำอธิบายของ dialog ---
 function AlertDialogHeader({ children, className = "" }) {
   return <div className={`alert-dialog-header ${className}`}>{children}</div>;
 }
@@ -27,6 +30,7 @@ const AlertDialogDescription = AlertDialogPrimitive.Description;
 const AlertDialogAction = AlertDialogPrimitive.Action;
 const AlertDialogCancel = AlertDialogPrimitive.Cancel;
 
+// --- Close Button: ปิด dialog พร้อม aria-label สำหรับ screen reader ---
 function AlertDialogCloseIcon() {
   return (
     <AlertDialogPrimitive.Cancel
@@ -38,6 +42,7 @@ function AlertDialogCloseIcon() {
   );
 }
 
+// ส่งออก component ย่อยเพื่อประกอบ dialog ได้ตามหน้าที่ต้องการ
 export {
   AlertDialog,
   AlertDialogAction,

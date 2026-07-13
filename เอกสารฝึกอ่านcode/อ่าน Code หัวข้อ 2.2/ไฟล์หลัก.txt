@@ -1,0 +1,8 @@
+src/App.jsx
+ไฟล์หลักของแอป ใช้กำหนด route และหน้าแต่ละ path
+src/index.css
+ไฟล์รวม CSS ของทั้งโปรเจกต์
+src/main.jsx
+จุดเริ่มต้นของ React app ใช้ render แอปเข้า root
+src/vercel.json
+ตั้งค่า rewrite สำหรับ deploy บน Vercel เพื่อให้ React Router ใช้งานได้

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 function BlogCard(props) {
+  // --- Date Formatting: แปลงวันที่จาก API ให้อยู่ในรูปแบบอ่านง่าย ---
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "long",
@@ -10,6 +11,7 @@ function BlogCard(props) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* รูปภาพทำหน้าที่เป็นลิงก์ไปยังหน้า View Post */}
       <Link
         to={`/post/${props.id}`}
         className="relative h-[212px] sm:h-[360px]"
@@ -21,6 +23,7 @@ function BlogCard(props) {
         />
       </Link>
 
+      {/* --- รายละเอียดบทความ: หมวดหมู่ ชื่อ คำอธิบาย และผู้เขียน --- */}
       <div className="flex flex-col">
         <div className="flex">
           <span className="mb-2 rounded-full bg-green-200 px-3 py-1 text-sm font-semibold text-green-600">

@@ -1,0 +1,29 @@
+src/pages/AdminPanelPage.jsx
+หน้าจัดการบทความของฝั่งแอดมิน
+
+src/pages/CategoryManagementPage.jsx
+หน้าจัดการหมวดหมู่บทความ
+
+src/pages/CreateArticlePage.jsx
+หน้าฟอร์มสร้างบทความใหม่
+
+src/pages/LoginPage.jsx
+หน้าเข้าสู่ระบบ
+
+src/pages/NotFoundPage.jsx
+หน้า 404 เมื่อเข้า path ที่ไม่มี
+
+src/pages/NotificationPage.jsx
+หน้าแสดงรายการแจ้งเตือนของผู้ใช้
+
+src/pages/PostPage.jsx
+หน้าอ่านบทความแบบเต็ม
+
+src/pages/ProfilePage.jsx
+หน้าโปรไฟล์ผู้ใช้ ใช้ดูและแก้ไขข้อมูลส่วนตัว
+
+src/pages/ResetPasswordPage.jsx
+หน้าเปลี่ยนรหัสผ่าน
+
+src/pages/SignupPage.jsx
+หน้าสมัครสมาชิก

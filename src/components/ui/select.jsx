@@ -1,9 +1,11 @@
 import { Check, ChevronDown } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
+// --- Radix Primitives: Root ควบคุม Select และ Value แสดงค่าที่เลือก ---
 const Select = SelectPrimitive.Root;
 const SelectValue = SelectPrimitive.Value;
 
+// --- Select Trigger: ปุ่มสำหรับเปิดรายการตัวเลือก ---
 function SelectTrigger({ className = "", children, ...props }) {
   return (
     <SelectPrimitive.Trigger className={className} {...props}>
@@ -15,6 +17,7 @@ function SelectTrigger({ className = "", children, ...props }) {
   );
 }
 
+// --- Select Content: เมนูตัวเลือกที่ render ผ่าน Portal ---
 function SelectContent({ className = "", children, ...props }) {
   return (
     <SelectPrimitive.Portal>
@@ -30,6 +33,7 @@ function SelectContent({ className = "", children, ...props }) {
   );
 }
 
+// --- Select Item: ตัวเลือกหนึ่งรายการและไอคอนเมื่อถูกเลือก ---
 function SelectItem({ className = "", children, ...props }) {
   return (
     <SelectPrimitive.Item className={className} {...props}>
@@ -41,4 +45,5 @@ function SelectItem({ className = "", children, ...props }) {
   );
 }
 
+// ส่งออก component ย่อยเพื่อนำไปประกอบ Select ในหน้าอื่น
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue };

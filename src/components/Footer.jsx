@@ -9,6 +9,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
+        {/* --- Social Media Links --- */}
         <div className="footer-social">
           <p>Get in touch</p>
 
@@ -41,6 +42,7 @@ export function Footer() {
           </ul>
         </div>
 
+        {/* ลิงก์กลับไปยังหน้า Home โดยไม่ reload เว็บไซต์ */}
         <Link className="footer-home" to="/">
           Home page
         </Link>

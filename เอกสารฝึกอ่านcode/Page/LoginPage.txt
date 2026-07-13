@@ -1,0 +1,894 @@
+ผมจะแยกอธิบายตามลำดับการทำงานจริงของหน้า LoginPage ตั้งแต่ import → state → event → validation → render UI เพื่อให้เห็นภาพว่าโค้ดไหลยังไงตอนผู้ใช้กรอกและกด Log in.
+
+คิดเป็นเวลา 4s
+
+ได้เลยครับ โค้ดนี้คือหน้า LoginPage สำหรับให้ผู้ใช้กรอก Email / Password แล้วตรวจสอบว่าเข้าสู่ระบบได้ไหม โดยใช้ข้อมูลจำลองคือ
+
+demo@example.com / password123
+1. ส่วน Import
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { NavBar } from "../components";
+
+ส่วนนี้คือการดึงเครื่องมือที่ต้องใช้เข้ามาในไฟล์นี้
+
+useState
+import { useState } from "react";
+
+ใช้สำหรับสร้าง State หรือข้อมูลที่เปลี่ยนได้ในหน้าเว็บ เช่น
+
+const [values, setValues] = useState({ email: "", password: "" });
+
+ในหน้านี้ใช้เก็บค่าที่ผู้ใช้พิมพ์ในช่อง Email และ Password
+
+Link และ useNavigate
+import { Link, useNavigate } from "react-router-dom";
+
+มาจาก react-router-dom ใช้สำหรับเปลี่ยนหน้า
+
+Link
+
+ใช้สร้างลิงก์ไปหน้าอื่น เช่น
+
+<Link to="/signup">Sign up</Link>
+
+แปลว่า ถ้ากด Sign up จะไปหน้า /signup
+
+useNavigate
+
+ใช้เปลี่ยนหน้าด้วย JavaScript เช่น
+
+navigate("/");
+
+แปลว่า หลัง Login สำเร็จ ให้พาไปหน้าแรก /
+
+toast
+import { toast } from "sonner";
+
+ใช้แสดงข้อความแจ้งเตือน เช่น
+
+toast.success("Logged in successfully");
+
+จะมี popup แจ้งว่า Login สำเร็จ
+
+NavBar
+import { NavBar } from "../components";
+
+นำ Component ชื่อ NavBar มาใช้ในหน้านี้
+
+<NavBar />
+
+แปลว่าให้แสดงแถบเมนูด้านบนของหน้าเว็บ
+
+2. สร้าง Component LoginPage
+function LoginPage() {
+
+ตรงนี้คือการสร้าง React Component ชื่อ LoginPage
+
+Component นี้คือ “หน้า Login ทั้งหน้า”
+
+สุดท้ายมี export:
+
+export default LoginPage;
+
+เพื่อให้ไฟล์อื่นสามารถ import หน้า LoginPage ไปใช้ได้ เช่นใน Router
+
+3. useNavigate
+const navigate = useNavigate();
+
+บรรทัดนี้สร้างตัวช่วยชื่อ navigate
+
+เอาไว้สั่งเปลี่ยนหน้า เช่น
+
+navigate("/");
+
+ใช้ตอน Login สำเร็จ เพื่อพากลับหน้าแรก
+
+4. Form State
+const [values, setValues] = useState({ email: "", password: "" });
+const [errors, setErrors] = useState({});
+
+ตรงนี้สำคัญมาก เป็น State หลักของฟอร์ม
+
+4.1 values
+const [values, setValues] = useState({ email: "", password: "" });
+
+ใช้เก็บค่าที่ผู้ใช้กรอกในฟอร์ม
+
+ค่าเริ่มต้นคือ
+
+{
+  email: "",
+  password: ""
+}
+
+แปลว่า ตอนเปิดหน้ามาใหม่ ๆ ช่อง email และ password ยังว่างอยู่
+
+เวลาเราพิมพ์ email เช่น
+
+demo@example.com
+
+State จะกลายเป็น
+
+{
+  email: "demo@example.com",
+  password: ""
+}
+
+ถ้าพิมพ์ password ต่อ
+
+password123
+
+State จะกลายเป็น
+
+{
+  email: "demo@example.com",
+  password: "password123"
+}
+4.2 errors
+const [errors, setErrors] = useState({});
+
+ใช้เก็บข้อความ error
+
+ตอนแรกเป็น {} แปลว่ายังไม่มี error
+
+ถ้าผู้ใช้กรอก email ผิด อาจกลายเป็น
+
+{
+  email: "Please enter a valid email address."
+}
+
+ถ้าลืมกรอก password อาจกลายเป็น
+
+{
+  password: "Please enter your password."
+}
+
+ถ้า email/password ไม่ตรงกับ mock account อาจเป็น
+
+{
+  form: "Email or password is incorrect."
+}
+5. handleChange
+function handleChange(event) {
+  const { name, value } = event.target;
+  setValues((current) => ({ ...current, [name]: value }));
+  setErrors((current) => ({ ...current, [name]: "", form: "" }));
+}
+
+ฟังก์ชันนี้ทำงานทุกครั้งที่ผู้ใช้พิมพ์ใน input
+
+เพราะใน input มี
+
+onChange={handleChange}
+5.1 event.target
+const { name, value } = event.target;
+
+เวลาเราพิมพ์ใน input ตัว event.target คือ input ที่เรากำลังพิมพ์อยู่
+
+เช่น input email:
+
+<input name="email" value={values.email} />
+
+ถ้าพิมพ์ demo@example.com
+
+จะได้ประมาณนี้:
+
+name = "email"
+value = "demo@example.com"
+
+ถ้าพิมพ์ในช่อง password:
+
+<input name="password" value={values.password} />
+
+จะได้:
+
+name = "password"
+value = "password123"
+5.2 อัปเดต values
+setValues((current) => ({ ...current, [name]: value }));
+
+ตรงนี้คือการอัปเดตค่าฟอร์ม
+
+สมมติ state เดิมเป็น
+
+{
+  email: "",
+  password: ""
+}
+
+ถ้าพิมพ์ email เป็น demo@example.com
+
+จะกลายเป็น
+
+{
+  email: "demo@example.com",
+  password: ""
+}
+
+เพราะ [name] ตอนนั้นคือ "email"
+
+ดังนั้น
+
+[name]: value
+
+จะเท่ากับ
+
+email: "demo@example.com"
+5.3 ทำไมต้องใช้ ...current
+{ ...current, [name]: value }
+
+เพราะเราไม่อยากลบค่าเดิมของช่องอื่น
+
+ตัวอย่าง ถ้า state เดิมเป็น
+
+{
+  email: "demo@example.com",
+  password: ""
+}
+
+แล้วเราพิมพ์ password
+
+ถ้าไม่มี ...current ค่า email อาจหายไป
+
+แต่เมื่อใช้ ...current จะเก็บค่าเดิมไว้ แล้วเปลี่ยนเฉพาะช่องที่กำลังพิมพ์
+
+5.4 ล้าง error ตอนผู้ใช้แก้ไข
+setErrors((current) => ({ ...current, [name]: "", form: "" }));
+
+เวลาเกิด error แล้วผู้ใช้กลับมาแก้ช่อง input ระบบจะล้าง error ของช่องนั้น
+
+เช่น ถ้า email ผิด แล้วมี error:
+
+{
+  email: "Please enter a valid email address."
+}
+
+พอผู้ใช้กลับมาพิมพ์ email ใหม่ error email จะถูกล้างเป็นค่าว่าง
+
+{
+  email: ""
+}
+
+และล้าง form error ด้วย เช่น
+
+form: ""
+
+เพราะถ้าผู้ใช้แก้ email หรือ password แล้ว ข้อความ “Email or password is incorrect.” ควรหายไปก่อน
+
+6. handleSubmit
+function handleSubmit(event) {
+  event.preventDefault();
+  const nextErrors = {};
+  if (!/^\S+@\S+\.\S+$/.test(values.email)) nextErrors.email = "Please enter a valid email address.";
+  if (!values.password) nextErrors.password = "Please enter your password.";
+  if (Object.keys(nextErrors).length === 0 && (values.email !== "demo@example.com" || values.password !== "password123")) {
+    nextErrors.form = "Email or password is incorrect.";
+  }
+  setErrors(nextErrors);
+  if (Object.keys(nextErrors).length === 0) {
+    toast.success("Logged in successfully");
+    navigate("/");
+  }
+}
+
+ฟังก์ชันนี้ทำงานตอนผู้ใช้กดปุ่ม Submit หรือปุ่ม Log in
+
+เพราะใน form มี
+
+<form onSubmit={handleSubmit}>
+7. event.preventDefault()
+event.preventDefault();
+
+ปกติ HTML form เมื่อกด submit หน้าเว็บจะ refresh เอง
+
+แต่ใน React เราไม่ต้องการให้หน้า refresh เพราะเราจะจัดการข้อมูลเองด้วย JavaScript
+
+ดังนั้นจึงใส่
+
+event.preventDefault();
+
+เพื่อบอกว่า:
+
+ไม่ต้อง refresh หน้าเว็บ เดี๋ยว React จัดการเอง
+
+8. สร้าง object สำหรับเก็บ error รอบใหม่
+const nextErrors = {};
+
+เวลาผู้ใช้กด Login เราจะตรวจใหม่ทั้งหมด
+
+ถ้ามี error ก็เอาไปใส่ใน nextErrors
+
+เช่น
+
+nextErrors.email = "Please enter a valid email address.";
+nextErrors.password = "Please enter your password.";
+9. ตรวจ Email
+if (!/^\S+@\S+\.\S+$/.test(values.email)) 
+  nextErrors.email = "Please enter a valid email address.";
+
+บรรทัดนี้ใช้ Regular Expression ตรวจว่า email หน้าตาถูกไหม
+
+เช่น email ที่ถูก:
+
+demo@example.com
+
+email ที่ผิด:
+
+demo
+demo@
+@example.com
+
+ส่วนนี้:
+
+/^\S+@\S+\.\S+$/
+
+แปลแบบง่าย ๆ ว่า email ต้องมีโครงสร้างประมาณนี้:
+
+ตัวอักษร + @ + ตัวอักษร + . + ตัวอักษร
+
+เช่น
+
+abc@gmail.com
+
+ถ้า email ไม่ถูก จะเพิ่ม error:
+
+nextErrors.email = "Please enter a valid email address.";
+10. ตรวจ Password
+if (!values.password) 
+  nextErrors.password = "Please enter your password.";
+
+แปลว่า ถ้า password ว่าง ให้แสดง error
+
+เช่นถ้าผู้ใช้ไม่ได้กรอก password จะได้:
+
+{
+  password: "Please enter your password."
+}
+11. ตรวจ Mock Account
+if (
+  Object.keys(nextErrors).length === 0 &&
+  (values.email !== "demo@example.com" || values.password !== "password123")
+) {
+  nextErrors.form = "Email or password is incorrect.";
+}
+
+ตรงนี้คือการตรวจว่าผู้ใช้กรอก email/password ตรงกับบัญชีจำลองไหม
+
+บัญชีที่ถูกคือ:
+
+Email: demo@example.com
+Password: password123
+เงื่อนไขนี้แปลว่าอะไร?
+Object.keys(nextErrors).length === 0
+
+แปลว่า ตอนนี้ยังไม่มี error จากการตรวจ email/password
+
+เช่น email ถูก format แล้ว และ password ไม่ว่าง
+
+จากนั้นค่อยตรวจต่อว่า email/password ตรงกับ mock account หรือไม่
+
+ส่วนนี้คืออะไร?
+values.email !== "demo@example.com" || values.password !== "password123"
+
+แปลว่า
+
+ถ้า email ไม่ใช่ demo@example.com
+หรือ password ไม่ใช่ password123
+
+ให้ถือว่า Login ไม่ผ่าน
+
+แล้วใส่ error:
+
+nextErrors.form = "Email or password is incorrect.";
+12. setErrors
+setErrors(nextErrors);
+
+หลังจากตรวจเสร็จ เอา error ทั้งหมดไปเก็บใน state errors
+
+เช่น ถ้ากรอก email ผิด:
+
+errors = {
+  email: "Please enter a valid email address."
+}
+
+React จะ re-render ใหม่ แล้วแสดง error ใต้ช่อง email
+
+13. ถ้าไม่มี error ให้ Login สำเร็จ
+if (Object.keys(nextErrors).length === 0) {
+  toast.success("Logged in successfully");
+  navigate("/");
+}
+
+ถ้า nextErrors ยังเป็น object ว่าง {} แปลว่าไม่มี error
+
+ระบบจะทำ 2 อย่าง:
+
+13.1 แสดง toast
+toast.success("Logged in successfully");
+
+แสดงข้อความว่า Login สำเร็จ
+
+13.2 เปลี่ยนหน้า
+navigate("/");
+
+พาผู้ใช้กลับไปหน้าแรก
+
+14. ส่วน return
+return (
+  <main className="site-layout auth-layout">
+
+ส่วนนี้คือ JSX ที่ใช้แสดง UI บนหน้าเว็บ
+
+15. โครงสร้างหลักของหน้า
+<main className="site-layout auth-layout">
+  <NavBar />
+  <section className="auth-page">
+    <div className="auth-card auth-card-login">
+      ...
+    </div>
+  </section>
+</main>
+
+โครงสร้างประมาณนี้:
+
+main
+ ├─ NavBar
+ └─ section auth-page
+     └─ div auth-card
+         ├─ h1 Log in
+         ├─ form
+         ├─ Link to Sign up
+         └─ Demo Account
+16. <NavBar />
+<NavBar />
+
+แสดง Navbar ด้านบนของหน้าเว็บ
+
+เพราะเรา import มาจาก
+
+import { NavBar } from "../components";
+17. กล่อง Login
+<section className="auth-page">
+  <div className="auth-card auth-card-login">
+
+ส่วนนี้คือพื้นที่ของหน้า Login
+
+ชื่อ class เช่น
+
+auth-page
+auth-card
+auth-card-login
+
+เอาไว้ให้ CSS จัดหน้าตา เช่น จัดให้อยู่กลางจอ ใส่สีพื้นหลัง ใส่เงา ใส่ความกว้าง
+
+18. หัวข้อหน้า
+<h1>Log in</h1>
+
+แสดงหัวข้อใหญ่ของหน้า Login
+
+19. Form Login
+<form className="auth-form" onSubmit={handleSubmit} noValidate>
+
+นี่คือฟอร์ม Login
+
+20. onSubmit={handleSubmit}
+onSubmit={handleSubmit}
+
+แปลว่า ตอนกดปุ่ม submit ให้เรียกฟังก์ชัน handleSubmit
+
+ปุ่มนี้คือ submit เพราะเขียนว่า
+
+<button type="submit">Log in</button>
+21. noValidate
+noValidate
+
+ปิด validation แบบเดิมของ browser
+
+เช่น browser ปกติอาจเด้งข้อความเองว่า email ไม่ถูก
+
+แต่เราไม่อยากใช้ของ browser
+เราอยากใช้ error ของเราเองจาก React
+
+จึงใส่ noValidate
+
+22. ช่อง Email
+<div className="auth-field">
+  <label htmlFor="login-email">Email</label>
+  <input
+    id="login-email"
+    name="email"
+    type="email"
+    placeholder="Email"
+    value={values.email}
+    onChange={handleChange}
+    aria-invalid={Boolean(errors.email)}
+  />
+  {errors.email && <small role="alert">{errors.email}</small>}
+</div>
+23. label
+<label htmlFor="login-email">Email</label>
+
+ใช้บอกว่าช่องนี้คือช่อง Email
+
+htmlFor="login-email" ต้องตรงกับ id ของ input
+
+<input id="login-email" />
+
+ข้อดีคือ ถ้าคลิกคำว่า Email cursor จะไปอยู่ใน input ทันที
+
+24. input email
+<input
+  id="login-email"
+  name="email"
+  type="email"
+  placeholder="Email"
+  value={values.email}
+  onChange={handleChange}
+  aria-invalid={Boolean(errors.email)}
+/>
+
+อธิบายแต่ละอัน:
+
+id
+id="login-email"
+
+ใช้เชื่อมกับ label
+
+name
+name="email"
+
+สำคัญมาก เพราะ handleChange ใช้ name เพื่อรู้ว่ากำลังแก้ field ไหน
+
+const { name, value } = event.target;
+
+ถ้า input นี้มี name="email"
+เวลาอัปเดต state ก็จะอัปเดตช่อง email
+
+type
+type="email"
+
+บอก browser ว่านี่คือช่อง email
+
+placeholder
+placeholder="Email"
+
+ข้อความจาง ๆ ที่ขึ้นในช่อง input ตอนยังไม่ได้พิมพ์
+
+value
+value={values.email}
+
+เอาค่า email จาก state มาแสดงใน input
+
+นี่คือสิ่งที่เรียกว่า Controlled Component
+
+แปลว่า input ถูกควบคุมด้วย React state
+
+onChange
+onChange={handleChange}
+
+ทุกครั้งที่พิมพ์ ให้เรียก handleChange
+
+เพื่ออัปเดต state
+
+aria-invalid
+aria-invalid={Boolean(errors.email)}
+
+ใช้ช่วยเรื่อง Accessibility
+
+ถ้ามี error email:
+
+Boolean(errors.email)
+
+จะเป็น true
+
+แปลว่า input นี้มีค่าผิด
+
+ถ้าไม่มี error จะเป็น false
+
+25. แสดง error ใต้ช่อง Email
+{errors.email && <small role="alert">{errors.email}</small>}
+
+แปลว่า
+
+ถ้า errors.email มีข้อความ ให้แสดง <small>
+
+ถ้าไม่มี error ไม่ต้องแสดงอะไร
+
+ตัวอย่าง ถ้า email ผิด จะแสดง:
+
+Please enter a valid email address.
+26. ช่อง Password
+<div className="auth-field">
+  <label htmlFor="login-password">Password</label>
+  <input
+    id="login-password"
+    name="password"
+    type="password"
+    placeholder="Password"
+    value={values.password}
+    onChange={handleChange}
+    aria-invalid={Boolean(errors.password)}
+  />
+  {errors.password && <small role="alert">{errors.password}</small>}
+</div>
+
+ทำงานเหมือนช่อง Email แต่เปลี่ยนเป็น password
+
+27. type="password"
+type="password"
+
+ทำให้เวลาพิมพ์ รหัสผ่านจะถูกซ่อน เช่น
+
+••••••••
+28. name="password"
+name="password"
+
+ตัวนี้สำคัญ เพราะใช้บอก handleChange ว่ากำลังแก้ field password
+
+เวลาเขียน:
+
+setValues((current) => ({ ...current, [name]: value }));
+
+ถ้า name คือ "password"
+ก็จะอัปเดต:
+
+password: value
+29. แสดง error ใต้ช่อง Password
+{errors.password && <small role="alert">{errors.password}</small>}
+
+ถ้าผู้ใช้ไม่กรอก password จะแสดง:
+
+Please enter your password.
+30. Error ของทั้งฟอร์ม
+{errors.form && (
+  <p className="auth-form-error" role="alert">
+    {errors.form}
+  </p>
+)}
+
+ส่วนนี้ใช้แสดง error รวมของฟอร์ม
+
+เช่น email/password ไม่ตรงกับ mock account
+
+Email or password is incorrect.
+
+ต่างจาก errors.email และ errors.password
+
+errors.email
+errors.password
+
+สองอันนั้นคือ error ของแต่ละช่อง
+
+แต่
+
+errors.form
+
+คือ error รวม เช่น Login ไม่ผ่าน
+
+31. ปุ่ม Log in
+<button className="auth-submit" type="submit">
+  Log in
+</button>
+
+ปุ่มนี้เป็น submit button
+
+เมื่อกด จะทำให้ form เรียก:
+
+handleSubmit
+
+เพราะ form มี:
+
+onSubmit={handleSubmit}
+32. ลิงก์ไปหน้า Sign up
+<p className="auth-switch">
+  Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+</p>
+
+แสดงข้อความ:
+
+Don't have an account? Sign up
+
+ถ้ากด Sign up จะไปหน้า
+
+/signup
+33. Don&apos;t คืออะไร?
+Don&apos;t
+
+คือการเขียนเครื่องหมาย ' แบบ HTML entity
+
+จริง ๆ คือคำว่า:
+
+Don't
+
+เขียนแบบนี้เพื่อหลีกเลี่ยงปัญหาเรื่องเครื่องหมาย quote ใน JSX/HTML
+
+34. Demo Account
+<p className="auth-demo">
+  Demo: demo@example.com / password123
+</p>
+
+แสดงบัญชีทดลองให้ผู้ใช้รู้ว่าต้องกรอกอะไรถึงจะ Login ผ่าน
+
+คือ:
+
+Email: demo@example.com
+Password: password123
+35. ลำดับการทำงานจริงของหน้านี้
+
+เวลาเปิดหน้า Login:
+
+values = {
+  email: "",
+  password: ""
+}
+
+errors = {}
+
+หน้าจะโชว์ช่อง email/password ว่าง ๆ
+
+กรณีที่ 1: ผู้ใช้พิมพ์ Email
+
+ผู้ใช้พิมพ์:
+
+demo@example.com
+
+handleChange ทำงาน
+
+name = "email"
+value = "demo@example.com"
+
+จากนั้น state เปลี่ยนเป็น:
+
+values = {
+  email: "demo@example.com",
+  password: ""
+}
+กรณีที่ 2: ผู้ใช้พิมพ์ Password
+
+ผู้ใช้พิมพ์:
+
+password123
+
+handleChange ทำงาน
+
+name = "password"
+value = "password123"
+
+state เปลี่ยนเป็น:
+
+values = {
+  email: "demo@example.com",
+  password: "password123"
+}
+กรณีที่ 3: ผู้ใช้กด Log in
+
+ฟอร์มเรียก:
+
+handleSubmit(event)
+
+จากนั้น:
+
+กันหน้า refresh ด้วย event.preventDefault()
+สร้าง nextErrors = {}
+ตรวจ email
+ตรวจ password
+ตรวจว่า email/password ตรงกับ mock account ไหม
+เอา error ไปเก็บใน errors
+ถ้าไม่มี error ให้แสดง toast และ navigate ไปหน้าแรก
+36. ถ้ากรอกถูกจะเกิดอะไรขึ้น?
+
+กรอก:
+
+demo@example.com
+password123
+
+ไม่มี error
+
+nextErrors = {}
+
+เข้าเงื่อนไขนี้:
+
+if (Object.keys(nextErrors).length === 0) {
+  toast.success("Logged in successfully");
+  navigate("/");
+}
+
+ผลลัพธ์คือ:
+
+แสดงข้อความ Logged in successfully
+กลับไปหน้าแรก /
+37. ถ้ากรอกผิดจะเกิดอะไรขึ้น?
+Email ผิด format
+
+เช่น:
+
+demo
+
+จะได้ error:
+
+errors.email = "Please enter a valid email address."
+
+แล้วแสดงใต้ช่อง email
+
+ไม่กรอก password
+
+จะได้ error:
+
+errors.password = "Please enter your password."
+
+แล้วแสดงใต้ช่อง password
+
+Email/password ไม่ตรง
+
+เช่น:
+
+demo@example.com
+123456
+
+จะได้ error:
+
+errors.form = "Email or password is incorrect."
+
+แล้วแสดง error รวมของฟอร์ม
+
+38. จุดสำคัญที่ควรจำ
+
+หน้านี้ใช้หลักสำคัญของ React หลายอย่าง:
+
+useState
+
+ใช้เก็บข้อมูลในฟอร์มและ error
+
+Controlled Component
+
+input ถูกควบคุมด้วย state ผ่าน value และ onChange
+
+handleChange
+
+ใช้ฟังก์ชันเดียวจัดการ input ได้หลายช่อง เพราะใช้ name
+
+handleSubmit
+
+ใช้ตรวจข้อมูลตอนกด submit
+
+errors
+
+ใช้เก็บข้อความแจ้งเตือนและแสดงบนหน้าเว็บ
+
+useNavigate
+
+ใช้เปลี่ยนหน้าหลัง Login สำเร็จ
+
+Link
+
+ใช้ทำลิงก์ไปหน้า Sign up
+
+toast
+
+ใช้แจ้งเตือนแบบ popup
+
+39. สรุปแบบภาพรวมง่าย ๆ
+
+หน้า LoginPage นี้ทำงานแบบนี้:
+
+ผู้ใช้พิมพ์ email/password
+        ↓
+handleChange อัปเดต values
+        ↓
+ผู้ใช้กด Log in
+        ↓
+handleSubmit ตรวจข้อมูล
+        ↓
+ถ้าผิด → setErrors → แสดง error
+        ↓
+ถ้าถูก → toast.success → navigate("/")
+
+จำสั้น ๆ ได้ว่า:
+
+values เก็บค่าที่พิมพ์
+errors เก็บข้อความ error
+handleChange ทำงานตอนพิมพ์
+handleSubmit ทำงานตอนกด Log in
+navigate("/") ใช้พาไปหน้าแรกหลัง Login สำเร็จ

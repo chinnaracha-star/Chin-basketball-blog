@@ -15,27 +15,34 @@ const POSTS_PER_PAGE = 6;
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
 function ArticleSection() {
-  const [selectedCategory, setSelectedCategory] = useState("Highlight");
-  const [posts, setPosts] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [keyword, setKeyword] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  // --- useState: เก็บข้อมูลที่เปลี่ยนแปลงและสั่งให้ UI แสดงผลใหม่ ---
+  const [selectedCategory, setSelectedCategory] = useState("Highlight"); // หมวดหมู่ที่เลือกอยู่
+  const [posts, setPosts] = useState([]); // รายการบทความที่ได้รับจาก API
+  const [page, setPage] = useState(1); // หน้าปัจจุบันของ Pagination
+  const [hasMore, setHasMore] = useState(true); // ระบุว่ายังมีหน้าถัดไปหรือไม่
+  const [isLoading, setIsLoading] = useState(false); // สถานะกำลังโหลดข้อมูล
+  const [error, setError] = useState(""); // ข้อความเมื่อเรียก API ไม่สำเร็จ
+  const [searchTerm, setSearchTerm] = useState(""); // ข้อความที่ผู้ใช้กำลังพิมพ์
+  const [keyword, setKeyword] = useState(""); // Keyword ที่พร้อมส่งไปค้นหากับ API
+  const [isSearchFocused, setIsSearchFocused] = useState(false); // ควบคุม dropdown ผลค้นหา
 
+  // --- Debounce Search: รอให้หยุดพิมพ์ 350ms ก่อนนำคำไปค้นหา ---
   useEffect(() => {
+    const nextKeyword = searchTerm.trim();
+
+    if (nextKeyword === keyword) return;
+
     const timeoutId = window.setTimeout(() => {
       setPosts([]);
       setPage(1);
       setHasMore(true);
-      setKeyword(searchTerm.trim());
+      setKeyword(nextKeyword);
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, keyword]);
 
+  // --- Fetch Posts: ดึงบทความเมื่อหน้า หมวดหมู่ หรือ keyword เปลี่ยน ---
   useEffect(() => {
     const controller = new AbortController();
 
@@ -44,14 +51,13 @@ function ArticleSection() {
       setError("");
 
       try {
+        // ส่ง Query Parameters สำหรับ Pagination, Category และ Search
         const response = await axios.get(API_URL, {
           params: {
             page,
             limit: POSTS_PER_PAGE,
             category:
-              selectedCategory === "Highlight"
-                ? undefined
-                : selectedCategory,
+              selectedCategory === "Highlight" ? undefined : selectedCategory,
             keyword: keyword || undefined,
           },
           signal: controller.signal,
@@ -59,9 +65,11 @@ function ArticleSection() {
 
         const { posts: newPosts, currentPage, totalPages } = response.data;
 
+        // หน้าแรกแทนที่ข้อมูลเดิม ส่วนหน้าถัดไปนำข้อมูลมาต่อท้าย
         setPosts((previousPosts) =>
           page === 1 ? newPosts : [...previousPosts, ...newPosts],
         );
+        //เช็กว่ายังมีหน้าถัดไปไหม
         setHasMore(currentPage < totalPages);
       } catch (requestError) {
         if (!axios.isCancel(requestError)) {
@@ -77,9 +85,11 @@ function ArticleSection() {
 
     fetchPosts();
 
+    // ยกเลิก request เก่าเมื่อ component ถูกถอดหรือ dependency เปลี่ยน
     return () => controller.abort();
   }, [page, selectedCategory, keyword]);
 
+  // --- Category Handler: ล้างรายการเดิมและเริ่มโหลดใหม่จากหน้าแรก ---
   function handleCategoryChange(category) {
     if (category === selectedCategory) return;
 
@@ -89,6 +99,7 @@ function ArticleSection() {
     setSelectedCategory(category);
   }
 
+  // --- Pagination Handler: เพิ่มเลขหน้าเพื่อโหลดบทความชุดถัดไป ---
   function handleLoadMore() {
     if (!isLoading && hasMore) {
       setPage((currentPage) => currentPage + 1);
@@ -100,13 +111,17 @@ function ArticleSection() {
       <div className="article-panel">
         <h2 className="article-title">Latest articles</h2>
 
+        {/* --- Filter และ Search Controls --- */}
         <div className="article-controls">
           <div className="article-tabs" aria-label="Article categories">
+            {/* ปุ่มหมวดหมู่ */}
             {categories.map((category) => (
               <button
                 key={category}
                 type="button"
-                className={`article-tab ${selectedCategory === category ? "article-tab-active" : ""}`}
+                className={`article-tab ${
+                  selectedCategory === category ? "article-tab-active" : ""
+                }`}
                 aria-pressed={selectedCategory === category}
                 disabled={selectedCategory === category}
                 onClick={() => handleCategoryChange(category)}
@@ -117,6 +132,7 @@ function ArticleSection() {
           </div>
 
           <div className="article-search">
+            {/* ช่อง Search */}
             <input
               type="text"
               placeholder="Search"
@@ -132,6 +148,7 @@ function ArticleSection() {
             />
             <span aria-hidden="true">Search</span>
 
+            {/* กล่องผลการค้นหา */}
             {isSearchFocused && keyword && (
               <div
                 id="article-search-results"
@@ -157,6 +174,8 @@ function ArticleSection() {
 
           <div className="article-category">
             <p>Category</p>
+
+            {/* Dropdown เลือก Category */}
             <Select
               value={selectedCategory}
               onValueChange={handleCategoryChange}
@@ -180,6 +199,7 @@ function ArticleSection() {
           </div>
         </div>
 
+        {/* --- รายการบทความ --- */}
         <div
           className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2"
           aria-live="polite"
@@ -189,23 +209,21 @@ function ArticleSection() {
           ))}
 
           {!isLoading && !error && posts.length === 0 && (
-            <p className="article-empty">No articles in this category yet.</p>
+            <p className="article-empty">ไม่มีข้อมูลหรือเนื้อหาที่ค้นหา</p>
           )}
         </div>
 
+        {/* --- Error State --- */}
         {error && (
           <p className="article-status article-error" role="alert">
             {error}
           </p>
         )}
 
+        {/* --- Load More Button --- */}
         {hasMore && !error && (
           <div className="article-view-more">
-            <button
-              type="button"
-              onClick={handleLoadMore}
-              disabled={isLoading}
-            >
+            <button type="button" onClick={handleLoadMore} disabled={isLoading}>
               {isLoading ? "Loading..." : "View more"}
             </button>
           </div>

@@ -1,0 +1,26 @@
+ได้เลยครับ แบบสั้น ๆ สำหรับไฟล์ที่เพิ่มใน Assignment รอบ Member Management
+
+
+[src/components/MemberLayout.jsx]
+เป็น layout กลางของฝั่งสมาชิก/แอดมิน มี sidebar, header, และพื้นที่แสดงเนื้อหาของแต่ละหน้า
+
+[src/data/memberMock.js]
+เก็บ mock data เช่น ข้อมูลสมาชิก, notifications, และรายการบทความตัวอย่าง
+
+[src/pages/ProfilePage.jsx]
+หน้าแก้ไขโปรไฟล์ผู้ใช้ เช่น ชื่อ, username, email, bio และรูปโปรไฟล์
+
+[src/pages/ResetPasswordPage.jsx]
+หน้าเปลี่ยนรหัสผ่าน มี validation และ dialog ยืนยันก่อนเปลี่ยน
+
+[src/pages/NotificationPage.jsx]
+หน้าแสดงรายการการแจ้งเตือนของผู้ใช้จาก mock data
+
+[src/pages/AdminPanelPage.jsx]
+หน้าแสดงตารางจัดการบทความ มี search, filter, และปุ่ม action เช่น edit/delete
+
+[src/pages/CategoryManagementPage.jsx]
+หน้าแสดงรายการหมวดหมู่บทความและจำนวนบทความในแต่ละหมวด
+
+[src/pages/CreateArticlePage.jsx]
+หน้า form สำหรับสร้างบทความใหม่ เช่น รูป, category, title, introduction และ content

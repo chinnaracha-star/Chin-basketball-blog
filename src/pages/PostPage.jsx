@@ -20,6 +20,7 @@ import NotFoundPage from "./NotFoundPage";
 
 const API_URL = "https://blog-post-project-api.vercel.app/posts";
 
+// --- Date Formatting: แปลงวันที่บทความให้อยู่ในรูปแบบ Day Month Year ---
 function formatDate(date) {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -30,15 +31,20 @@ function formatDate(date) {
 }
 
 function PostPage() {
+  // --- Routing Parameter: รับ id ของบทความจาก URL /post/:postId ---
   const { postId } = useParams();
-  const [post, setPost] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
+  // --- useState: เก็บข้อมูลบทความและสถานะต่าง ๆ ของหน้า ---
+  const [post, setPost] = useState(null); // ข้อมูลบทความจาก API
+  const [isLoading, setIsLoading] = useState(true); // สถานะกำลังโหลดบทความ
+  const [error, setError] = useState(""); // ประเภท error ที่เกิดจาก API
+  const [showLoginDialog, setShowLoginDialog] = useState(false); // เปิด/ปิด dialog แจ้งให้เข้าสู่ระบบ
+
+  // เตรียม URL ปัจจุบันสำหรับ Copy และแชร์ไปยัง Social Media
   const articleUrl = window.location.href;
   const encodedArticleUrl = encodeURIComponent(articleUrl);
 
+  // --- Copy Handler: บันทึกลิงก์บทความลง Clipboard และแสดง Sonner ---
   async function handleCopyLink() {
     try {
       await navigator.clipboard.writeText(articleUrl);
@@ -48,6 +54,7 @@ function PostPage() {
     }
   }
 
+  // --- Fetch Post: ดึงรายละเอียดบทความใหม่ทุกครั้งที่ postId เปลี่ยน ---
   useEffect(() => {
     const controller = new AbortController();
 
@@ -56,6 +63,7 @@ function PostPage() {
       setError("");
 
       try {
+        // เรียก endpoint /posts/:postId พร้อม signal สำหรับยกเลิก request
         const response = await axios.get(`${API_URL}/${postId}`, {
           signal: controller.signal,
         });
@@ -72,9 +80,11 @@ function PostPage() {
     }
 
     fetchPost();
+    // ป้องกันการอัปเดต state หลังออกจากหน้านี้
     return () => controller.abort();
   }, [postId]);
 
+  // หาก API ตอบ 404 ให้ใช้หน้า Not Found ของเว็บไซต์
   if (error === "not-found") return <NotFoundPage />;
 
   return (
@@ -82,14 +92,17 @@ function PostPage() {
       <NavBar />
 
       <div className="post-page">
+        {/* --- Loading State --- */}
         {isLoading && <p className="post-status">Loading article...</p>}
 
+        {/* --- Error State --- */}
         {error === "request" && (
           <p className="post-status article-error" role="alert">
             Unable to load this article. Please try again.
           </p>
         )}
 
+        {/* --- Article Content --- */}
         {post && (
           <article>
             <header className="post-header">
@@ -125,6 +138,7 @@ function PostPage() {
               </aside>
             </div>
 
+            {/* --- Like, Share และ Comment Actions --- */}
             <section className="post-interactions">
               <div className="post-action-bar">
                 <button
@@ -193,6 +207,7 @@ function PostPage() {
 
       <Footer />
 
+      {/* --- Login Required Dialog: แสดงเมื่อกด Like หรือ Comment --- */}
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <AlertDialogContent>
           <AlertDialogCloseIcon />
