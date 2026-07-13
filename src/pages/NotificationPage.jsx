@@ -1,4 +1,5 @@
 import { Bell } from "lucide-react";
+import { Link } from "react-router-dom";
 import { MemberLayout } from "../components";
 import { mockNotifications } from "../data/memberMock";
 
@@ -22,6 +23,12 @@ function NotificationPage() {
                 <time>{notification.time}</time>
               </div>
               <p>{notification.detail}</p>
+              <Link
+                className="notification-view-link"
+                to={notification.actionTo}
+              >
+                {notification.actionLabel || "View"}
+              </Link>
             </div>
           </article>
         ))}

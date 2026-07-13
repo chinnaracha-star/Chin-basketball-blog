@@ -3,6 +3,7 @@ import { Footer, HeroSection, NavBar } from "./components";
 import ArticleSection from "./components/ArticleSection";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import CategoryManagementPage from "./pages/CategoryManagementPage";
+import CategoryFormPage from "./pages/CategoryFormPage";
 import CreateArticlePage from "./pages/CreateArticlePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PostPage from "./pages/PostPage";
@@ -38,7 +39,10 @@ function App() {
       <Route path="/member/notifications" element={<NotificationPage />} />
       <Route path="/admin" element={<AdminPanelPage />} />
       <Route path="/admin/categories" element={<CategoryManagementPage />} />
+      <Route path="/admin/categories/create" element={<CategoryFormPage />} />
+      <Route path="/admin/categories/:categoryId/edit" element={<CategoryFormPage />} />
       <Route path="/admin/articles/create" element={<CreateArticlePage />} />
+      <Route path="/admin/articles/:articleId/edit" element={<CreateArticlePage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

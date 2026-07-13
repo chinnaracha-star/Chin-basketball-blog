@@ -1,0 +1,40 @@
+React Router Building Personal Blog
+Assignment Part 1.1
+
+ภาพรวม
+หัวข้อนี้เป็นช่วงเริ่มวางโครงโปรเจกต์ React Personal Blog ให้รันด้วย Vite และเริ่มแยกหน้า/ส่วนประกอบหลักของเว็บ
+
+สิ่งที่ควรเข้าใจ
+- โปรเจกต์ใช้ React + Vite เป็นฐาน
+- จุดเริ่มต้นของแอปอยู่ที่ src/main.jsx
+- ไฟล์ src/App.jsx เป็นที่รวม route และบอกว่า URL ไหนจะแสดงหน้าไหน
+- หน้าแรกประกอบจาก component หลัก เช่น NavBar, HeroSection, ArticleSection และ Footer
+
+ไฟล์ที่ควรอ่าน
+- src/main.jsx
+- src/App.jsx
+- src/components/index.js
+- src/components/NavBar.jsx
+- src/components/HeroSection.jsx
+- src/components/Footer.jsx
+
+แนวคิดสำคัญ
+- Component คือชิ้นส่วน UI ที่แยกออกมาใช้ซ้ำได้
+- App.jsx ทำหน้าที่เหมือนแผนที่ของเว็บ
+- การ export/import ช่วยให้เรียก component จากไฟล์อื่นได้สะดวก
+- หน้า Home ไม่ได้เขียนทุกอย่างไว้ในไฟล์เดียว แต่ประกอบจากหลาย component
+
+สิ่งที่เพิ่มเข้ามาในช่วงนี้
+- โครงสร้างโปรเจกต์ React
+- หน้า Home พื้นฐาน
+- Component หลักของหน้าเว็บ
+- การจัดไฟล์ component ให้เรียกใช้งานง่าย
+
+วิธีอ่านโค้ด
+1. เริ่มจาก src/main.jsx เพื่อดูว่า React render เข้าหน้าเว็บตรงไหน
+2. เปิด src/App.jsx เพื่อดูว่าแอปประกอบด้วยหน้าอะไรบ้าง
+3. ดู component ทีละตัวว่าแต่ละส่วนแสดงผลอะไร
+4. ดู return (...) เป็นหลักก่อน แล้วค่อยย้อนขึ้นไปดู import หรือ logic
+
+สรุปสั้น
+Part 1.1 คือการตั้งต้น Personal Blog ให้มีโครงหน้าแรกและ component หลักพร้อมใช้งาน

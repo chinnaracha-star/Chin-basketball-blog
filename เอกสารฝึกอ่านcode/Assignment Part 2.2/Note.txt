@@ -1,0 +1,74 @@
+React Router Building Personal Blog
+Assignment Part 2.2
+
+ภาพรวม
+หัวข้อนี้เป็น Assignment ล่าสุดที่เพิ่มระบบ Member Management และ Admin Management เข้ามาใน Personal Blog
+
+สิ่งที่เพิ่มเข้ามาหลัก ๆ
+- โซนสมาชิกสำหรับจัดการข้อมูลส่วนตัว
+- โซนแอดมินสำหรับจัดการบทความและหมวดหมู่
+- layout กลางสำหรับหน้า member/admin
+- mock data สำหรับทดลอง UI ก่อนต่อ backend จริง
+- route ใหม่สำหรับหน้า member และ admin
+
+ไฟล์สำคัญที่เพิ่ม/แก้:
+[AdminArticlesProvider.jsx]
+[useAdminArticles.js]
+[CreateArticlePage.jsx]
+[App.jsx]
+
+ไฟล์ใหม่/ไฟล์สำคัญ
+- src/components/MemberLayout.jsx
+- src/data/memberMock.js
+- src/pages/ProfilePage.jsx
+- src/pages/ResetPasswordPage.jsx
+- src/pages/NotificationPage.jsx
+- src/pages/AdminPanelPage.jsx
+- src/pages/CategoryManagementPage.jsx
+- src/pages/CreateArticlePage.jsx
+- src/App.jsx
+
+Route ที่เพิ่มเข้ามา
+- /member/profile
+- /member/reset-password
+- /member/notifications
+- /admin
+- /admin/categories
+- /admin/articles/create
+
+ฝั่ง Member
+- ProfilePage ใช้ดูและแก้ไขข้อมูลโปรไฟล์ เช่น name, username, email, bio และ avatar
+- ResetPasswordPage ใช้เปลี่ยนรหัสผ่าน มี validation และ dialog ยืนยัน
+- NotificationPage ใช้แสดงรายการแจ้งเตือนจาก mockNotifications
+- MemberLayout เป็นโครงกลาง มี sidebar, header และพื้นที่แสดง content ของแต่ละหน้า
+
+ฝั่ง Admin
+- AdminPanelPage ใช้แสดงตารางจัดการบทความ มี search/filter/action เช่น edit หรือ delete
+- CategoryManagementPage ใช้แสดงรายการหมวดหมู่และจำนวนบทความในแต่ละหมวด
+- CreateArticlePage เป็นฟอร์มสร้างบทความใหม่ เช่น image, category, title, introduction และ content
+
+Mock data
+- mockMember เก็บข้อมูลสมาชิกตัวอย่าง
+- mockNotifications เก็บรายการแจ้งเตือน
+- mockManagedArticles เก็บรายการบทความสำหรับหน้า admin
+
+แนวคิดสำคัญ
+- mock data ช่วยให้ทำ UI และฝึก logic ได้ก่อนต่อ backend
+- layout กลางช่วยลดการเขียน sidebar/header ซ้ำในหลายหน้า
+- route กลุ่ม /member ใช้สำหรับผู้ใช้ทั่วไป
+- route กลุ่ม /admin ใช้สำหรับฝั่งจัดการหลังบ้าน
+- หน้า admin เหมาะสำหรับฝึก map array เป็น table/list
+- หน้า form เหมาะสำหรับฝึก useState, handleChange, validation และ handleSubmit
+
+ลำดับแนะนำในการอ่าน
+1. src/App.jsx เพื่อดู route ใหม่ทั้งหมด
+2. src/components/MemberLayout.jsx เพื่อเข้าใจโครงหน้า member/admin
+3. src/data/memberMock.js เพื่อดูว่าข้อมูลมาจากไหน
+4. src/pages/ProfilePage.jsx เพื่อฝึกอ่าน form และ state
+5. src/pages/ResetPasswordPage.jsx เพื่อดู validation และ confirm dialog
+6. src/pages/NotificationPage.jsx เพื่อดูการ render list
+7. src/pages/AdminPanelPage.jsx เพื่อดู table, search และ filter
+8. src/pages/CategoryManagementPage.jsx และ src/pages/CreateArticlePage.jsx เพื่อดูหน้าจัดการ admin เพิ่มเติม
+
+สรุปสั้น
+Part 2.2 คือรอบล่าสุดที่ขยาย Personal Blog จากเว็บอ่านบทความ ให้มีระบบสมาชิกและระบบแอดมินครบขึ้น

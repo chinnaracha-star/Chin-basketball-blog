@@ -129,7 +129,7 @@ function ResetPasswordPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm password change?</AlertDialogTitle>
             <AlertDialogDescription>
-              This mock action will update the UI state and clear the password
+              This mock action will reset the UI state and clear the password
               fields.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -141,7 +141,7 @@ function ResetPasswordPage() {
               className="member-primary-button"
               onClick={handleConfirmChange}
             >
-              Confirm
+              Reset
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
