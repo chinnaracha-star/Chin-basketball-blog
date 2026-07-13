@@ -1,0 +1,45 @@
+React Router Building Personal Blog
+Assignment Part 2.1
+
+ภาพรวม
+หัวข้อนี้เพิ่มความสมบูรณ์ให้หน้า Blog โดยเฉพาะส่วน Latest articles ให้ดึงข้อมูลบทความ แสดงการ์ด ค้นหา กรองหมวดหมู่ และโหลดเพิ่มได้
+
+สิ่งที่ควรเข้าใจ
+- ArticleSection เป็น component ที่ logic เยอะกว่าส่วนอื่น
+- ใช้ axios ดึงข้อมูลจาก API
+- ใช้ useEffect เพื่อ fetch posts เมื่อ page, category หรือ keyword เปลี่ยน
+- ใช้ useState เก็บสถานะหลายอย่าง เช่น posts, page, loading, error, search
+
+ไฟล์ที่ควรอ่าน
+- src/components/ArticleSection.jsx
+- src/components/BlogCard.jsx
+- src/pages/PostPage.jsx
+- src/data/blogPosts.js
+- src/components/ui/select.jsx
+
+สิ่งที่เพิ่มเข้ามาในช่วงนี้
+- ดึงบทความจาก API
+- แสดงบทความเป็น card ด้วย BlogCard
+- เลือก category ได้
+- search บทความได้
+- debounce search เพื่อรอให้ผู้ใช้หยุดพิมพ์ก่อนค่อยค้นหา
+- pagination แบบ View more
+- loading/error state
+- dropdown category ด้วย UI component
+
+แนวคิดสำคัญ
+- useEffect เหมาะกับงาน side effect เช่น เรียก API
+- dependency array ของ useEffect เป็นตัวบอกว่า effect จะทำงานใหม่เมื่อค่าไหนเปลี่ยน
+- AbortController ใช้ยกเลิก request เก่าเมื่อ component ถูกถอดหรือมี request ใหม่
+- page ใช้ควบคุมการโหลดบทความชุดถัดไป
+- hasMore ใช้ตัดสินว่าควรแสดงปุ่ม View more ต่อไหม
+
+Flow การทำงานของ ArticleSection
+1. เริ่มต้น selectedCategory เป็น Highlight และ page เป็น 1
+2. useEffect เรียก API เพื่อโหลด posts
+3. ถ้าเปลี่ยน category จะล้าง posts เดิมและกลับไป page 1
+4. ถ้าพิมพ์ search จะรอ 350ms แล้วค่อยเปลี่ยน keyword
+5. ถ้ากด View more จะเพิ่ม page แล้วโหลดบทความเพิ่มต่อท้าย
+
+สรุปสั้น
+Part 2.1 คือการทำให้หน้า Blog ใช้งานได้จริงขึ้น มี API, search, filter และ pagination

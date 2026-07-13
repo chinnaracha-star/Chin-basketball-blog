@@ -1348,6 +1348,10 @@ body {
   margin-bottom: 16px;
 }
 
+.admin-toolbar-single {
+  grid-template-columns: minmax(220px, 420px);
+}
+
 .admin-search {
   position: relative;
 }
@@ -1406,12 +1410,21 @@ body {
   font-weight: 600;
 }
 
+.admin-status-draft {
+  color: #d97706;
+}
+
+.admin-status-published {
+  color: #16a34a;
+}
+
 .admin-table td:last-child {
   display: flex;
   gap: 10px;
 }
 
-.admin-table button {
+.admin-table button,
+.admin-table-action {
   width: 32px;
   height: 32px;
   display: grid;
@@ -1421,16 +1434,38 @@ body {
   background: transparent;
   color: #756f68;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.admin-table button:hover {
+.admin-table button:hover,
+.admin-table-action:hover {
   background: #f2f0ed;
   color: #302c29;
 }
 
-.admin-table button svg {
+.admin-table button svg,
+.admin-table-action svg {
   width: 16px;
   height: 16px;
+}
+
+.admin-empty-state {
+  height: 140px;
+  color: #756f68;
+  text-align: center;
+}
+
+.admin-empty-panel {
+  max-width: 560px;
+}
+
+.admin-empty-panel h2 {
+  margin: 0 0 8px;
+}
+
+.admin-empty-panel p {
+  margin: 0;
+  color: #625d57;
 }
 
 .create-article-form {
@@ -1438,6 +1473,12 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 20px;
+}
+
+.category-form {
+  max-width: 520px;
+  display: grid;
+  gap: 24px;
 }
 
 .thumbnail-upload {
@@ -1456,8 +1497,49 @@ body {
   height: 32px;
 }
 
+.thumbnail-upload img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.thumbnail-button {
+  position: relative;
+  width: fit-content;
+  overflow: hidden;
+}
+
+.thumbnail-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.member-danger-button {
+  background: #dc2626;
+}
+
+.member-danger-button:hover {
+  background: #b91c1c;
+}
+
 .article-content-editor {
   min-height: 320px;
+}
+
+.notification-view-link {
+  width: fit-content;
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  color: #26211d;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 @keyframes dialog-fade-in {

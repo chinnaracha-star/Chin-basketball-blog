@@ -1,0 +1,50 @@
+React Router Building Personal Blog
+Assignment Part 1.2
+
+ภาพรวม
+หัวข้อนี้เริ่มทำให้เว็บมีหลายหน้าและนำทางได้จริงด้วย React Router เช่น หน้าอ่านบทความ, Login, Signup และหน้า 404
+
+สิ่งที่ควรเข้าใจ
+- ใช้ react-router-dom เพื่อกำหนดเส้นทางของแต่ละหน้า
+- Route path="/" คือหน้าแรก
+- Route path="/post/:postId" คือหน้าอ่านบทความแบบ dynamic route
+- Route path="*" ใช้แสดง NotFoundPage เมื่อเข้า URL ที่ไม่มีอยู่
+
+ไฟล์ที่ควรอ่าน
+- src/App.jsx
+- src/pages/PostPage.jsx
+- src/pages/LoginPage.jsx
+- src/pages/SignupPage.jsx
+- src/pages/NotFoundPage.jsx
+- src/components/NavBar.jsx
+
+สิ่งที่เพิ่มเข้ามาในช่วงนี้
+- ระบบ route หลายหน้า
+- หน้า Post สำหรับอ่านบทความเต็ม
+- หน้า Login สำหรับเข้าสู่ระบบแบบ mock
+- หน้า Signup สำหรับสมัครสมาชิกแบบ mock
+- หน้า NotFoundPage สำหรับ path ที่ไม่ตรงกับ route
+- Link สำหรับเปลี่ยนหน้าโดยไม่ reload เว็บ
+
+แนวคิดสำคัญ
+- Link ใช้แทน a tag เมื่ออยากเปลี่ยนหน้าภายใน React app
+- useNavigate ใช้สั่งเปลี่ยนหน้าจาก JavaScript เช่น หลัง login สำเร็จ
+- useState ใช้เก็บค่าฟอร์มและ error
+- validation ใช้ตรวจข้อมูลก่อนให้ผู้ใช้ไปต่อ
+
+จุดที่ควรสังเกตใน Login
+- มี state values เก็บ email/password
+- มี state errors เก็บข้อความ error
+- handleChange อัปเดตค่าจาก input
+- handleSubmit ตรวจ email/password กับ mock account
+- ถ้าสำเร็จจะ toast และ navigate กลับหน้าแรก
+
+จุดที่ควรสังเกตใน Signup
+- มี validate function แยกไว้ตรวจข้อมูล
+- เช็ก name, username, email และ password
+- เช็ก email ซ้ำจาก EXISTING_EMAILS
+- มี success state หลังสมัครผ่าน validation
+- มี AuthField เป็น component ย่อยสำหรับ input ที่ใช้ซ้ำ
+
+สรุปสั้น
+Part 1.2 คือการทำให้ Personal Blog มีหลายหน้า นำทางได้ และเริ่มมีฟอร์ม Login/Signup พร้อม validation
