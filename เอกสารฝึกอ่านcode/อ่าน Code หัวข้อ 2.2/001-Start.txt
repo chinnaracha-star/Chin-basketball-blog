@@ -1,0 +1,92 @@
+ลำดับที่ควรเริ่ม:
+[src/main.jsx]
+ดูจุดเริ่มต้นของแอปก่อน ว่า React render จากตรงไหน และมี Router ครอบไว้ยังไง
+
+[src/App.jsx]
+ไฟล์นี้สำคัญมาก เพราะบอกว่าแต่ละ URL ไปหน้าไหน เป็นแผนที่ของทั้งโปรเจกต์
+
+[src/components/index.js])
+ดูว่า component หลักมีอะไรบ้าง และ export ออกมายังไง
+
+[src/components/NavBar.jsx]
+เพราะเป็น component ที่ใช้บ่อยและเชื่อม navigation หลายส่วน
+
+[src/components/MemberLayout.jsx]
+ใช้เข้าใจโครงของฝั่ง member/admin ว่า sidebar กับ content ทำงานร่วมกันยังไง
+
+[src/pages/ProfilePage.jsx]
+เหมาะสำหรับฝึกอ่าน state, form, input, event handler
+
+[src/pages/ResetPasswordPage.jsx]
+จะได้ฝึกอ่าน validation และ dialog ยืนยันการทำงาน
+
+[src/pages/AdminPanelPage.jsx]
+ใช้ฝึกอ่านการ render ตารางจาก array
+
+[src/pages/CreateArticlePage.jsx]
+ใช้ฝึกอ่านฟอร์มที่ยาวขึ้นและดูการจัดโครงสร้าง UI
+
+[src/components/ArticleSection.jsx]
+   ไฟล์นี้ค่อนข้างยากขึ้น เพราะมี useEffect, search, debounce, API และ pagination
+
+
+
+
+วิธีหัดอ่านให้ได้ผล:
+อ่านก่อนว่าไฟล์นี้ “ทำหน้าที่อะไร”
+ดู import ก่อน ว่าใช้เครื่องมืออะไรบ้าง
+หา useState และ useEffect เพื่อดูว่ามีข้อมูลอะไรเปลี่ยนได้บ้าง
+หา function เช่น handleSubmit, handleChange, handleLoadMore ว่าทำงานตอนไหน
+ค่อยดู return (...) ตอนท้าย ว่า UI แสดงอะไรออกมา
+เวลางง ให้ถามตัวเองแค่ 3 เรื่อง:
+ข้อมูลมาจากไหน
+เปลี่ยนตอนไหน
+แสดงผลตรงไหน
+ถ้าเริ่มจริง ๆ ผมแนะนำให้เริ่มจาก 3 ไฟล์นี้ก่อน:
+
+[src/main.jsx]
+[src/App.jsx]
+[src/pages/ProfilePage.jsx]
+
+
+
+
+
+Roadmap 2-3 ชั่วโมง
+15-20 นาทีแรก ดูโครงทั้งโปรเจกต์
+เปิด [src/main.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\main.jsx), [src/App.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\App.jsx), [src/components/index.js](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\index.js)
+เป้าหมายคือให้รู้ว่าแอปเริ่มตรงไหน, route มีอะไรบ้าง, และมี component/page หลักอะไรบ้าง
+
+20-30 นาที อ่านหน้า Home
+เปิด [src/components/NavBar.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\NavBar.jsx), [src/components/HeroSection.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\HeroSection.jsx), [src/components/ArticleSection.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\ArticleSection.jsx), [src/components/BlogCard.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\BlogCard.jsx), [src/components/Footer.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\Footer.jsx)
+รอบนี้ให้เข้าใจว่า Home ถูกประกอบจากอะไรบ้าง และบทความถูกดึง/แสดงยังไง
+
+20-25 นาที อ่านหน้า Login และ Signup
+เปิด [src/pages/LoginPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\LoginPage.jsx) กับ [src/pages/SignupPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\SignupPage.jsx)
+เป้าหมายคือฝึกอ่าน useState, form, validation, handleChange, handleSubmit
+
+20 นาที อ่านหน้า Post และ 404
+เปิด [src/pages/PostPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\PostPage.jsx) กับ [src/pages/NotFoundPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\NotFoundPage.jsx)
+ตรงนี้จะได้เข้าใจ route แบบ dynamic (/post/:postId) และการโหลดข้อมูลรายบทความ
+
+25-30 นาที อ่านส่วน Member Management
+เปิด [src/components/MemberLayout.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\MemberLayout.jsx) ก่อน
+แล้วตามด้วย [src/pages/ProfilePage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\ProfilePage.jsx), [src/pages/ResetPasswordPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\NotificationPage.jsx), [src/pages\\ResetPasswordPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\ResetPasswordPage.jsx)
+เป้าหมายคือเข้าใจ sidebar, หน้าโปรไฟล์, แจ้งเตือน, และการเปลี่ยนรหัสผ่าน
+
+20-25 นาที อ่านฝั่ง Admin
+เปิด [src/pages/AdminPanelPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\AdminPanelPage.jsx), [src/pages/CategoryManagementPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\CategoryManagementPage.jsx), [src/pages/CreateArticlePage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\CreateArticlePage.jsx), [src/data/memberMock.js](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\data\\memberMock.js)
+จะได้รู้ว่าข้อมูล mock ถูกส่งไปใช้ในหน้า admin ยังไง
+
+10-15 นาทีสุดท้าย ดูไฟล์ style และ UI พื้นฐาน
+เปิด [src/index.css](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\index.css), [src/components/ui/alert-dialog.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\ui\\alert-dialog.jsx), [src/components/ui/select.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\ui\\select.jsx)
+รอบนี้ไม่ต้องอ่านทุกบรรทัด แค่ให้รู้ว่า style อยู่ตรงไหน และ dialog/select ถูกสร้างยังไง
+
+วิธีอ่านให้เข้าใจเร็ว
+ทุกไฟล์ให้ดู 5 อย่างนี้ก่อน: import, state, function, return, export
+ถ้าเป็น page ให้ถามว่า “หน้านี้รับ route อะไร”, “ใช้ข้อมูลจากไหน”, “กดปุ่มแล้วเกิดอะไร”
+ถ้าเป็น component ให้ถามว่า “component นี้รับ props ไหม”, “ใช้ซ้ำตรงไหน”, “หน้าที่หลักคืออะไร”
+ถ้าเริ่มงง ให้ยังไม่อ่าน CSS ลึก ๆ ก่อน กลับมาดู flow ของ React ก่อน
+ลำดับที่ดีที่สุดถ้ามีเวลาไม่ถึง 2 ชั่วโมง
+ต้องอ่านก่อน: [src/main.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\main.jsx), [src/App.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\App.jsx), [src/components/ArticleSection.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\components\\ArticleSection.jsx), [src/pages/LoginPage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\LoginPage.jsx), [src/pages/ProfilePage.jsx](C:\\Users\\Chinnarach\\Desktop\\FSD-11\\React-All\\Chin-basketball-blog\\src\\pages\\ProfilePage.jsx)
+ค่อยตามอ่าน: admin pages, index.css, ui components

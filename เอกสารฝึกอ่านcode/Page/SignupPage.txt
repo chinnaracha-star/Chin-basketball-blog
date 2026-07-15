@@ -1,0 +1,1268 @@
+อธิบายหน้า SignupPage.jsx แบบ Step by Step
+
+หน้า SignupPage มีหน้าที่หลักคือ
+
+รับข้อมูลจากผู้ใช้ ได้แก่ ชื่อ, Username, Email และ Password
+ตรวจสอบความถูกต้องของข้อมูล
+แสดงข้อความ Error ใต้ช่องที่กรอกไม่ถูกต้อง
+ถ้าข้อมูลถูกต้องทั้งหมด จะแสดงหน้าสมัครสมาชิกสำเร็จ
+เมื่อกดปุ่ม Continue จะไปหน้า Login
+1. ส่วน Import
+import { CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { NavBar } from "../components";
+1.1 Import ไอคอน
+import { CheckCircle2 } from "lucide-react";
+
+CheckCircle2 คือไอคอนเครื่องหมายถูกในวงกลม
+
+ใช้แสดงเมื่อสมัครสมาชิกสำเร็จ
+
+<CheckCircle2 aria-hidden="true" />
+
+ไอคอนนี้มาจาก Library ชื่อ lucide-react
+
+1.2 Import useState
+import { useState } from "react";
+
+useState เป็น React Hook สำหรับเก็บข้อมูลที่สามารถเปลี่ยนแปลงได้
+
+ในหน้านี้ใช้เก็บ 3 อย่าง
+
+ข้อมูลที่ผู้ใช้กรอก
+ข้อความ Error
+สถานะว่าสมัครสำเร็จหรือยัง
+1.3 Import Link และ useNavigate
+import { Link, useNavigate } from "react-router-dom";
+
+ทั้งสองตัวใช้สำหรับเปลี่ยนหน้าเว็บ
+
+Link
+
+ใช้สร้างลิงก์ไปหน้าอื่น
+
+<Link to="/login">Log in</Link>
+
+เมื่อกด Log in จะไปหน้า /login
+
+useNavigate
+
+ใช้เปลี่ยนหน้าผ่าน JavaScript
+
+const navigate = useNavigate();
+
+จากนั้นสามารถเขียนได้ว่า
+
+navigate("/login");
+
+เพื่อสั่งให้ไปหน้า Login
+
+1.4 Import NavBar
+import { NavBar } from "../components";
+
+นำ Component NavBar มาแสดงด้านบนของหน้า
+
+<NavBar />
+2. Mock Data
+const EXISTING_EMAILS = ["demo@example.com", "member@example.com"];
+
+ตัวแปรนี้ใช้จำลองอีเมลที่มีผู้ใช้งานอยู่ในระบบแล้ว
+
+ตัวอย่างเช่น ถ้าผู้ใช้กรอก
+
+demo@example.com
+
+ระบบจะไม่ยอมให้สมัคร และจะแสดงข้อความว่า
+
+This email is already in use.
+
+คำว่า Mock Data หมายถึงข้อมูลจำลองที่สร้างขึ้นมาใช้ทดสอบระบบ
+
+ในระบบจริง รายชื่ออีเมลควรถูกตรวจสอบจาก Backend หรือ Database ไม่ควรเขียนไว้ใน Frontend แบบนี้
+
+3. Function validate
+function validate(values) {
+  const errors = {};
+
+  if (!values.name.trim()) errors.name = "Please enter your full name.";
+
+  if (values.username.trim().length < 3) {
+    errors.username = "Username must be at least 3 characters.";
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(values.email)) {
+    errors.email = "Please enter a valid email address.";
+  } else if (EXISTING_EMAILS.includes(values.email.trim().toLowerCase())) {
+    errors.email = "This email is already in use.";
+  }
+
+  if (values.password.length < 8) {
+    errors.password = "Password must be at least 8 characters.";
+  }
+
+  return errors;
+}
+
+Function นี้มีหน้าที่ตรวจสอบข้อมูลทั้งหมดจากฟอร์ม
+
+รับข้อมูลเข้ามาผ่านตัวแปร values
+
+function validate(values)
+
+ตัวอย่างข้อมูลใน values
+
+{
+  name: "Chin",
+  username: "chinnarach",
+  email: "chin@example.com",
+  password: "12345678"
+}
+3.1 สร้าง Object สำหรับเก็บ Error
+const errors = {};
+
+ตอนเริ่มต้นยังไม่มี Error จึงเป็น Object ว่าง
+
+{}
+
+ถ้าพบว่า Username สั้นเกินไป จะเพิ่มข้อมูลเข้าไป เช่น
+
+{
+  username: "Username must be at least 3 characters."
+}
+3.2 ตรวจสอบ Name
+if (!values.name.trim()) {
+  errors.name = "Please enter your full name.";
+}
+values.name
+
+คือค่าจากช่อง Name
+
+.trim()
+
+ใช้ลบช่องว่างด้านหน้าและด้านหลังข้อความ
+
+ตัวอย่าง
+
+"   Chin   ".trim();
+
+ผลลัพธ์คือ
+
+Chin
+
+ถ้าผู้ใช้กรอกแต่ช่องว่าง
+
+"     "
+
+หลังใช้ .trim() จะเหลือข้อความว่าง
+
+""
+เครื่องหมาย !
+!values.name.trim()
+
+หมายถึง “ไม่มีค่า” หรือ “เป็นข้อความว่าง”
+
+ดังนั้นคำสั่งนี้หมายถึง
+
+ถ้าช่อง Name ไม่มีข้อมูล ให้สร้าง Error ของ Name
+
+3.3 ตรวจสอบ Username
+if (values.username.trim().length < 3) {
+  errors.username = "Username must be at least 3 characters.";
+}
+.length
+
+ใช้ตรวจสอบจำนวนตัวอักษร
+
+ตัวอย่าง
+
+"chin".length;
+
+ได้ผลลัพธ์เป็น
+
+4
+
+เงื่อนไขนี้ตรวจว่า Username มีความยาวน้อยกว่า 3 ตัวหรือไม่
+
+ตัวอย่างที่ไม่ผ่าน
+
+a
+ab
+
+ตัวอย่างที่ผ่าน
+
+abc
+chin
+user123
+3.4 ตรวจสอบรูปแบบ Email
+if (!/^\S+@\S+\.\S+$/.test(values.email)) {
+  errors.email = "Please enter a valid email address.";
+}
+
+ส่วนนี้ใช้ Regular Expression หรือ Regex ตรวจสอบรูปแบบ Email
+
+/^\S+@\S+\.\S+$/
+
+ไม่จำเป็นต้องจำ Regex ทั้งหมดในตอนนี้ ให้เข้าใจว่าใช้ตรวจว่า Email มีรูปแบบประมาณนี้หรือไม่
+
+ข้อความ@ข้อความ.ข้อความ
+
+ตัวอย่างที่ผ่าน
+
+chin@example.com
+member@gmail.com
+
+ตัวอย่างที่ไม่ผ่าน
+
+chin
+chin@
+chin@gmail
+@gmail.com
+.test()
+
+ใช้ตรวจสอบว่าข้อความตรงตามรูปแบบ Regex หรือไม่
+
+/รูปแบบ/.test(ข้อความ)
+
+ถ้าถูกต้องจะได้ true
+
+ถ้าไม่ถูกต้องจะได้ false
+
+แต่ด้านหน้ามี !
+
+!regex.test(values.email)
+
+จึงหมายถึง
+
+ถ้า Email ไม่ตรงตามรูปแบบ ให้สร้าง Error
+
+3.5 ตรวจสอบว่า Email ถูกใช้งานแล้วหรือไม่
+else if (
+  EXISTING_EMAILS.includes(values.email.trim().toLowerCase())
+) {
+  errors.email = "This email is already in use.";
+}
+
+ส่วนนี้จะทำงานต่อเมื่อรูปแบบ Email ถูกต้องแล้ว
+
+.trim()
+
+ลบช่องว่างด้านหน้าและด้านหลัง
+
+.toLowerCase()
+
+เปลี่ยนตัวอักษรภาษาอังกฤษให้เป็นตัวพิมพ์เล็กทั้งหมด
+
+ตัวอย่าง
+
+"DEMO@EXAMPLE.COM".toLowerCase();
+
+ผลลัพธ์คือ
+
+demo@example.com
+
+ทำให้ตรวจสอบ Email ได้แม้ผู้ใช้จะพิมพ์ตัวพิมพ์ใหญ่หรือตัวพิมพ์เล็ก
+
+.includes()
+
+ใช้ตรวจสอบว่า Array มีข้อมูลนี้อยู่หรือไม่
+
+EXISTING_EMAILS.includes("demo@example.com");
+
+ผลลัพธ์คือ
+
+true
+
+เพราะมีอีเมลนี้อยู่ใน Array
+
+ดังนั้นเงื่อนไขทั้งหมดหมายถึง
+
+ถ้า Email ที่ผู้ใช้กรอกอยู่ในรายชื่อ Email ที่มีอยู่แล้ว ให้แสดง Error
+
+3.6 ตรวจสอบ Password
+if (values.password.length < 8) {
+  errors.password = "Password must be at least 8 characters.";
+}
+
+ตรวจสอบว่า Password มีอย่างน้อย 8 ตัวอักษรหรือไม่
+
+ตัวอย่างที่ไม่ผ่าน
+
+1234
+abcdef
+
+ตัวอย่างที่ผ่าน
+
+12345678
+password123
+3.7 ส่ง Error กลับ
+return errors;
+
+หลังตรวจสอบทุกช่องแล้ว Function จะส่ง Object errors กลับไป
+
+ถ้าทุกอย่างถูกต้อง จะได้
+
+{}
+
+ถ้ามีข้อผิดพลาด อาจได้
+
+{
+  username: "Username must be at least 3 characters.",
+  email: "Please enter a valid email address.",
+  password: "Password must be at least 8 characters."
+}
+4. Component SignupPage
+function SignupPage() {
+
+นี่คือ Component หลักของหน้า Signup
+
+5. สร้าง navigate
+const navigate = useNavigate();
+
+นำ useNavigate() มาเก็บไว้ในตัวแปร navigate
+
+จากนั้นสามารถใช้เปลี่ยนหน้าได้
+
+navigate("/login");
+6. State values
+const [values, setValues] = useState({
+  name: "",
+  username: "",
+  email: "",
+  password: "",
+});
+
+State นี้ใช้เก็บค่าจาก Input ทั้ง 4 ช่อง
+
+ค่าเริ่มต้นคือ
+
+{
+  name: "",
+  username: "",
+  email: "",
+  password: ""
+}
+
+เมื่อผู้ใช้กรอกข้อมูล อาจเปลี่ยนเป็น
+
+{
+  name: "Chinnarach Apibalsri",
+  username: "chin",
+  email: "chin@example.com",
+  password: "12345678"
+}
+values
+
+ใช้สำหรับอ่านข้อมูลปัจจุบัน
+
+setValues
+
+ใช้สำหรับอัปเดตข้อมูล
+
+7. State errors
+const [errors, setErrors] = useState({});
+
+ใช้เก็บข้อความ Error ของแต่ละช่อง
+
+ตอนเริ่มต้นยังไม่มี Error
+
+{}
+
+ถ้าผู้ใช้กรอกข้อมูลไม่ถูกต้อง อาจกลายเป็น
+
+{
+  email: "Please enter a valid email address.",
+  password: "Password must be at least 8 characters."
+}
+8. State isSuccess
+const [isSuccess, setIsSuccess] = useState(false);
+
+ใช้เก็บสถานะว่าสมัครสมาชิกสำเร็จหรือยัง
+
+ตอนเริ่มต้นเป็น
+
+false
+
+จึงแสดงฟอร์มสมัครสมาชิก
+
+เมื่อข้อมูลผ่านการตรวจสอบ จะเปลี่ยนเป็น
+
+true
+
+จากนั้น React จะแสดงข้อความสมัครสมาชิกสำเร็จแทนฟอร์ม
+
+9. Function handleChange
+function handleChange(event) {
+  const { name, value } = event.target;
+
+  setValues((current) => ({
+    ...current,
+    [name]: value,
+  }));
+
+  setErrors((current) => ({
+    ...current,
+    [name]: "",
+  }));
+}
+
+Function นี้ทำงานทุกครั้งที่ผู้ใช้พิมพ์ใน Input
+
+9.1 รับ event
+function handleChange(event)
+
+event คือข้อมูลเหตุการณ์ที่เกิดขึ้น
+
+เช่น ผู้ใช้พิมพ์ในช่อง Email
+
+React จะส่งข้อมูลของช่องนั้นมาใน
+
+event.target
+9.2 ดึง name และ value
+const { name, value } = event.target;
+
+นี่เรียกว่า Destructuring
+
+เขียนแบบเต็มได้ว่า
+
+const name = event.target.name;
+const value = event.target.value;
+
+ตัวอย่าง ถ้าผู้ใช้พิมพ์ในช่อง Email
+
+name = "email";
+value = "chin@example.com";
+
+ถ้าผู้ใช้พิมพ์ในช่อง Username
+
+name = "username";
+value = "chin";
+9.3 อัปเดต State values
+setValues((current) => ({
+  ...current,
+  [name]: value,
+}));
+current
+
+คือค่า State ปัจจุบัน
+
+ตัวอย่าง
+
+{
+  name: "Chin",
+  username: "",
+  email: "",
+  password: ""
+}
+...current
+
+เรียกว่า Spread Operator
+
+ใช้คัดลอกข้อมูลเดิมทั้งหมด
+
+{
+  ...current
+}
+[name]: value
+
+ใช้เปลี่ยนเฉพาะช่องที่ผู้ใช้กำลังพิมพ์
+
+ถ้า
+
+name = "email";
+value = "chin@example.com";
+
+จะเทียบเท่ากับ
+
+email: "chin@example.com"
+
+ผลลัพธ์คือ
+
+{
+  name: "Chin",
+  username: "",
+  email: "chin@example.com",
+  password: ""
+}
+
+ข้อมูลช่องอื่นยังอยู่ครบ
+
+9.4 ล้าง Error ของช่องที่กำลังแก้ไข
+setErrors((current) => ({
+  ...current,
+  [name]: "",
+}));
+
+สมมติว่าก่อนหน้านี้มี Error
+
+{
+  email: "Please enter a valid email address."
+}
+
+เมื่อผู้ใช้กลับมาพิมพ์ในช่อง Email ระบบจะเปลี่ยนเป็น
+
+{
+  email: ""
+}
+
+จึงทำให้ข้อความ Error ของช่องนั้นหายไป
+
+แนวคิดคือ
+
+เมื่อผู้ใช้เริ่มแก้ไขข้อมูล ให้ล้าง Error เดิมของช่องนั้นก่อน
+
+10. Function handleSubmit
+function handleSubmit(event) {
+  event.preventDefault();
+
+  const nextErrors = validate(values);
+
+  setErrors(nextErrors);
+
+  if (Object.keys(nextErrors).length === 0) {
+    setIsSuccess(true);
+  }
+}
+
+Function นี้ทำงานเมื่อผู้ใช้กดปุ่ม Sign up
+
+10.1 ป้องกันหน้าเว็บ Refresh
+event.preventDefault();
+
+ตามปกติเมื่อกด Submit ฟอร์ม Browser จะ Refresh หน้าเว็บ
+
+แต่ใน React เราไม่ต้องการให้หน้า Refresh เพราะ State จะหายไป
+
+จึงใช้
+
+event.preventDefault();
+
+เพื่อหยุดการทำงานปกติของ Form
+
+10.2 ตรวจสอบข้อมูล
+const nextErrors = validate(values);
+
+ส่งข้อมูลใน values ไปให้ Function validate
+
+ตัวอย่าง
+
+validate({
+  name: "Chin",
+  username: "ab",
+  email: "ผิด",
+  password: "1234",
+});
+
+อาจได้ผลลัพธ์กลับมาเป็น
+
+{
+  username: "Username must be at least 3 characters.",
+  email: "Please enter a valid email address.",
+  password: "Password must be at least 8 characters."
+}
+10.3 นำ Error ไปเก็บใน State
+setErrors(nextErrors);
+
+เมื่อ State errors เปลี่ยน React จะ Render หน้าใหม่
+
+จากนั้น Error จะแสดงใต้ Input ที่เกี่ยวข้อง
+
+10.4 ตรวจสอบว่าไม่มี Error
+if (Object.keys(nextErrors).length === 0) {
+  setIsSuccess(true);
+}
+Object.keys(nextErrors)
+
+ใช้ดึงชื่อ Property ทั้งหมดออกมาจาก Object
+
+ตัวอย่าง
+
+const nextErrors = {
+  email: "Invalid email",
+  password: "Password too short",
+};
+
+คำสั่ง
+
+Object.keys(nextErrors);
+
+จะได้
+
+["email", "password"]
+
+ความยาวคือ
+
+2
+
+แต่ถ้าไม่มี Error
+
+const nextErrors = {};
+
+คำสั่ง
+
+Object.keys(nextErrors);
+
+จะได้
+
+[]
+
+ความยาวคือ
+
+0
+
+ดังนั้น
+
+Object.keys(nextErrors).length === 0
+
+หมายถึง
+
+ถ้าจำนวน Error เท่ากับ 0
+
+ให้เปลี่ยน isSuccess เป็น true
+
+setIsSuccess(true);
+11. โครงสร้าง JSX หลัก
+return (
+  <main className="site-layout auth-layout">
+    <NavBar />
+
+    <section className="auth-page">
+      <div className="auth-card">
+        ...
+      </div>
+    </section>
+  </main>
+);
+
+โครงสร้างหน้าเว็บเป็นประมาณนี้
+
+main
+├── NavBar
+└── section
+    └── auth-card
+        ├── ฟอร์มสมัครสมาชิก
+        └── หรือข้อความสมัครสำเร็จ
+12. Conditional Rendering
+{isSuccess ? (
+  <div>หน้าสมัครสำเร็จ</div>
+) : (
+  <>ฟอร์มสมัครสมาชิก</>
+)}
+
+นี่เรียกว่า Ternary Operator
+
+รูปแบบคือ
+
+เงื่อนไข ? สิ่งที่แสดงเมื่อเป็นจริง : สิ่งที่แสดงเมื่อเป็นเท็จ
+
+ในหน้านี้คือ
+
+isSuccess ? หน้า Success : หน้า Form
+
+ถ้า
+
+isSuccess === true
+
+แสดงหน้าสมัครสำเร็จ
+
+ถ้า
+
+isSuccess === false
+
+แสดงฟอร์มสมัครสมาชิก
+
+13. ส่วนสมัครสมาชิกสำเร็จ
+<div className="auth-success" role="status">
+  <CheckCircle2 aria-hidden="true" />
+
+  <h1>Registration successful</h1>
+
+  <p>Your account has been created. You can now log in.</p>
+
+  <button
+    type="button"
+    onClick={() => navigate("/login")}
+  >
+    Continue
+  </button>
+</div>
+13.1 role="status"
+role="status"
+
+ช่วยเรื่อง Accessibility
+
+ใช้แจ้งให้ Screen Reader รู้ว่าเนื้อหาส่วนนี้เป็นข้อความแจ้งสถานะที่เปลี่ยนแปลง
+
+13.2 ไอคอนสำเร็จ
+<CheckCircle2 aria-hidden="true" />
+
+แสดงไอคอนเครื่องหมายถูก
+
+aria-hidden="true" หมายถึงไม่ต้องให้ Screen Reader อ่านไอคอนนี้ เพราะเป็นเพียงภาพประกอบ
+
+13.3 ปุ่ม Continue
+<button
+  type="button"
+  onClick={() => navigate("/login")}
+>
+  Continue
+</button>
+
+เมื่อกดปุ่ม จะทำงานส่วนนี้
+
+navigate("/login");
+
+แล้วเปลี่ยนไปหน้า Login
+
+ใช้ type="button" เพราะปุ่มนี้ไม่ได้ใช้ Submit Form
+
+14. ส่วนฟอร์มสมัครสมาชิก
+<>
+  <h1>Sign up</h1>
+
+  <form
+    className="auth-form"
+    onSubmit={handleSubmit}
+    noValidate
+  >
+    ...
+  </form>
+
+  <p className="auth-switch">
+    Already have an account?
+    <Link to="/login">Log in</Link>
+  </p>
+</>
+14.1 Fragment
+<>
+  ...
+</>
+
+เรียกว่า React Fragment
+
+ใช้ครอบหลาย Element โดยไม่สร้าง Tag HTML เพิ่ม
+
+เพราะใน JSX ต้องมี Parent หลักหนึ่งตัว
+
+แทนที่จะเขียน
+
+<div>
+  <h1>Sign up</h1>
+  <form>...</form>
+  <p>...</p>
+</div>
+
+สามารถใช้ Fragment ได้
+
+<>
+  <h1>Sign up</h1>
+  <form>...</form>
+  <p>...</p>
+</>
+14.2 onSubmit
+<form onSubmit={handleSubmit}>
+
+เมื่อผู้ใช้กดปุ่ม
+
+<button type="submit">Sign up</button>
+
+Form จะเรียกใช้
+
+handleSubmit
+
+การใส่ onSubmit ที่ <form> ดีกว่าการใส่ onClick ที่ปุ่ม เพราะผู้ใช้สามารถกด Enter เพื่อ Submit ได้ด้วย
+
+14.3 noValidate
+<form noValidate>
+
+ปิดการตรวจสอบฟอร์มแบบอัตโนมัติของ Browser
+
+ตัวอย่างเช่น Browser อาจแสดงข้อความของตัวเองเมื่อ Email ไม่ถูกต้อง
+
+แต่หน้านี้ต้องการใช้ Error ที่เขียนเองใน Function validate
+
+จึงใช้
+
+noValidate
+15. การใช้ AuthField
+
+ตัวอย่างช่อง Name
+
+<AuthField
+  label="Name"
+  name="name"
+  placeholder="Full name"
+  value={values.name}
+  error={errors.name}
+  onChange={handleChange}
+/>
+
+AuthField เป็น Component ที่สร้างขึ้นมาใช้แทนโค้ด Label, Input และ Error ที่ซ้ำกัน
+
+Props ของ Name
+label="Name"
+
+ข้อความ Label ที่แสดงเหนือ Input
+
+name="name"
+
+ชื่อของ Input ใช้ระบุว่าจะอัปเดตข้อมูลช่องใด
+
+placeholder="Full name"
+
+ข้อความตัวอย่างในช่อง
+
+value={values.name}
+
+ค่าที่แสดงใน Input มาจาก State
+
+error={errors.name}
+
+ส่ง Error ของ Name ไปแสดง
+
+onChange={handleChange}
+
+เมื่อพิมพ์ ให้เรียก Function handleChange
+
+16. ช่อง Username
+<AuthField
+  label="Username"
+  name="username"
+  placeholder="Username"
+  value={values.username}
+  error={errors.username}
+  onChange={handleChange}
+/>
+
+ค่าของช่องนี้เชื่อมกับ
+
+values.username
+
+Error เชื่อมกับ
+
+errors.username
+17. ช่อง Email
+<AuthField
+  label="Email"
+  name="email"
+  type="email"
+  placeholder="Email"
+  value={values.email}
+  error={errors.email}
+  onChange={handleChange}
+/>
+
+เพิ่ม
+
+type="email"
+
+เพื่อบอก Browser ว่าช่องนี้ใช้กรอก Email
+
+บนมือถือ Keyboard อาจแสดงปุ่ม @ ให้สะดวกขึ้นด้วย
+
+18. ช่อง Password
+<AuthField
+  label="Password"
+  name="password"
+  type="password"
+  placeholder="Password"
+  value={values.password}
+  error={errors.password}
+  onChange={handleChange}
+/>
+
+ใช้
+
+type="password"
+
+ทำให้ตัวอักษรถูกซ่อนเป็นจุด
+
+••••••••
+19. ปุ่ม Sign up
+<button className="auth-submit" type="submit">
+  Sign up
+</button>
+
+เมื่อกดปุ่มนี้ Form จะเรียก
+
+handleSubmit
+
+เพราะปุ่มมี
+
+type="submit"
+
+และ Form มี
+
+onSubmit={handleSubmit}
+20. ลิงก์ไปหน้า Login
+<p className="auth-switch">
+  Already have an account?
+  <Link to="/login">Log in</Link>
+</p>
+
+ถ้ามีบัญชีอยู่แล้ว ผู้ใช้สามารถกด Log in
+
+จากนั้น React Router จะเปลี่ยนไปหน้า
+
+/login
+
+โดยไม่ Refresh หน้าเว็บทั้งหมด
+
+21. Component AuthField
+function AuthField({ label, error, ...inputProps }) {
+
+Component นี้ใช้สร้างช่อง Input แบบเดียวกันหลายครั้ง
+
+ถ้าไม่สร้าง AuthField เราต้องเขียนโค้ดซ้ำ 4 รอบ เช่น
+
+<label>Name</label>
+<input />
+<small>Error</small>
+
+การสร้าง Component ช่วยให้
+
+โค้ดสั้นลง
+ไม่ต้องเขียนซ้ำ
+แก้ไขรูปแบบ Input ได้จากที่เดียว
+ทุกช่องมีหน้าตาเหมือนกัน
+22. การรับ Props ของ AuthField
+function AuthField({ label, error, ...inputProps })
+
+Props ถูกแบ่งออกเป็น 3 ส่วน
+
+label
+
+ข้อความของ Label
+
+label="Email"
+error
+
+ข้อความ Error ของช่องนั้น
+
+error={errors.email}
+...inputProps
+
+เก็บ Props ที่เหลือทั้งหมด
+
+ตัวอย่างเช่น
+
+name
+type
+placeholder
+value
+onChange
+
+ถ้าเรียก Component แบบนี้
+
+<AuthField
+  label="Email"
+  name="email"
+  type="email"
+  placeholder="Email"
+  value={values.email}
+  error={errors.email}
+  onChange={handleChange}
+/>
+
+ตัวแปร inputProps จะมีข้อมูลประมาณนี้
+
+{
+  name: "email",
+  type: "email",
+  placeholder: "Email",
+  value: values.email,
+  onChange: handleChange
+}
+23. สร้าง errorId
+const errorId = `${inputProps.name}-error`;
+
+ถ้าช่องนี้มี
+
+name="email"
+
+จะได้
+
+email-error
+
+ถ้าเป็น Username จะได้
+
+username-error
+
+ใช้เป็น id ของข้อความ Error
+
+24. สร้าง inputId
+const inputId = `signup-${inputProps.name}`;
+
+ถ้าเป็น Email จะได้
+
+signup-email
+
+ถ้าเป็น Password จะได้
+
+signup-password
+
+ใช้เชื่อม Label กับ Input
+
+25. โครงสร้าง AuthField
+return (
+  <div className="auth-field">
+    <label htmlFor={inputId}>
+      {label}
+    </label>
+
+    <input
+      id={inputId}
+      {...inputProps}
+      onChange={inputProps.onChange}
+      aria-invalid={Boolean(error)}
+      aria-describedby={error ? errorId : undefined}
+    />
+
+    {error && (
+      <small id={errorId} role="alert">
+        {error}
+      </small>
+    )}
+  </div>
+);
+26. เชื่อม Label กับ Input
+<label htmlFor={inputId}>
+  {label}
+</label>
+
+และ Input มี
+
+<input id={inputId} />
+
+ตัวอย่าง
+
+<label htmlFor="signup-email">Email</label>
+<input id="signup-email" />
+
+เมื่อผู้ใช้กดที่คำว่า Email Cursor จะไปอยู่ในช่อง Email
+
+ใน React ต้องใช้
+
+htmlFor
+
+แทน for เพราะ for เป็นคำสงวนของ JavaScript
+
+27. ส่ง Props ให้ Input
+<input
+  id={inputId}
+  {...inputProps}
+/>
+
+...inputProps จะกระจาย Props ทั้งหมดเข้าไปใน <input>
+
+ตัวอย่างเช่น
+
+<input
+  id="signup-email"
+  name="email"
+  type="email"
+  placeholder="Email"
+  value={values.email}
+  onChange={handleChange}
+/>
+
+ดังนั้นไม่ต้องเขียนทุก Property ซ้ำใน Component
+
+28. onChange
+onChange={inputProps.onChange}
+
+เมื่อผู้ใช้พิมพ์ จะเรียก Function ที่ได้รับมาจาก Props
+
+ในที่นี้คือ
+
+handleChange
+
+จริง ๆ แล้ว onChange ถูกส่งเข้าไปผ่าน ...inputProps อยู่แล้ว ดังนั้นบรรทัดนี้ค่อนข้างซ้ำ
+
+สามารถเขียนให้สั้นลงได้ว่า
+
+<input
+  id={inputId}
+  {...inputProps}
+  aria-invalid={Boolean(error)}
+  aria-describedby={error ? errorId : undefined}
+/>
+
+เพราะ inputProps มี onChange อยู่แล้ว
+
+29. aria-invalid
+aria-invalid={Boolean(error)}
+
+ใช้ช่วยเรื่อง Accessibility
+
+บอก Screen Reader ว่า Input นี้มีข้อมูลไม่ถูกต้องหรือไม่
+
+Boolean(error)
+
+เปลี่ยนค่าให้เป็น Boolean
+
+ถ้ามี Error
+
+error = "Please enter a valid email address."
+
+จะได้
+
+true
+
+ถ้าไม่มี Error
+
+error = undefined
+
+หรือ
+
+error = ""
+
+จะได้
+
+false
+
+ดังนั้นผลลัพธ์ใน HTML อาจเป็น
+
+aria-invalid="true"
+
+เมื่อข้อมูลผิด
+
+30. aria-describedby
+aria-describedby={error ? errorId : undefined}
+
+ถ้ามี Error จะเชื่อม Input เข้ากับข้อความ Error
+
+ตัวอย่าง
+
+<input aria-describedby="email-error" />
+<small id="email-error">
+  Please enter a valid email address.
+</small>
+
+Screen Reader จะรู้ว่าข้อความ email-error เป็นคำอธิบายของ Input นี้
+
+ถ้าไม่มี Error
+
+aria-describedby={undefined}
+
+React จะไม่ใส่ Attribute นี้ลงใน HTML
+
+31. แสดงข้อความ Error
+{error && (
+  <small id={errorId} role="alert">
+    {error}
+  </small>
+)}
+
+นี่คือ Conditional Rendering ด้วย &&
+
+ความหมายคือ
+
+ถ้ามี Error ให้แสดง <small>
+
+ถ้า
+
+error = "Password must be at least 8 characters."
+
+จะแสดง
+
+<small role="alert">
+  Password must be at least 8 characters.
+</small>
+
+แต่ถ้า
+
+error = ""
+
+จะไม่แสดงอะไร
+
+32. role="alert"
+role="alert"
+
+ช่วยให้ Screen Reader แจ้งข้อความ Error ทันทีเมื่อ Error ปรากฏขึ้น
+
+33. Export Component
+export default SignupPage;
+
+ส่ง SignupPage ออกจากไฟล์นี้
+
+ทำให้ไฟล์อื่นสามารถ Import ไปใช้ได้ เช่น
+
+import SignupPage from "./pages/SignupPage";
+
+จากนั้นนำไปกำหนด Route ได้
+
+<Route path="/signup" element={<SignupPage />} />
+ลำดับการทำงานทั้งหมดของหน้า Signup
+ตอนเปิดหน้าเว็บ
+React เรียก Component SignupPage
+values เป็นข้อความว่างทุกช่อง
+errors เป็น Object ว่าง
+isSuccess เป็น false
+หน้าเว็บจึงแสดงฟอร์มสมัครสมาชิก
+ตอนผู้ใช้พิมพ์ Name
+
+สมมติพิมพ์คำว่า
+
+Chin
+onChange ทำงาน
+เรียก handleChange
+ได้ name = "name"
+ได้ value = "Chin"
+อัปเดต values.name
+ล้าง errors.name
+React Render หน้าใหม่
+
+State จะเป็น
+
+{
+  name: "Chin",
+  username: "",
+  email: "",
+  password: ""
+}
+ตอนกดปุ่ม Sign up
+Form เรียก handleSubmit
+preventDefault() ป้องกันหน้า Refresh
+ส่ง values ไปให้ validate
+validate ตรวจ Name, Username, Email และ Password
+ส่ง Object Error กลับมา
+setErrors(nextErrors) เก็บ Error ลง State
+ถ้ามี Error จะแสดง Error ใต้ Input
+ถ้าไม่มี Error จะตั้ง isSuccess เป็น true
+React แสดงหน้าสมัครสำเร็จแทนฟอร์ม
+ตอนกด Continue
+ปุ่มเรียก navigate("/login")
+React Router เปลี่ยนไปหน้า Login
+แนวคิดสำคัญที่ใช้ในหน้านี้
+
+หน้า Signup นี้รวมความรู้ React หลายเรื่องไว้ด้วยกัน ได้แก่
+
+useState เก็บข้อมูลที่เปลี่ยนแปลงได้
+Controlled Component เชื่อม Input กับ State
+Event Handling ด้วย onChange และ onSubmit
+Form Validation ตรวจสอบข้อมูลก่อนสมัคร
+Conditional Rendering เลือกแสดงฟอร์มหรือหน้าสำเร็จ
+Reusable Component ใช้ AuthField ลดโค้ดซ้ำ
+React Router ใช้ Link และ useNavigate
+Accessibility ใช้ aria-invalid, aria-describedby และ role="alert"
+
+สรุปสั้น ๆ ของ Flow คือ
+
+ผู้ใช้พิมพ์ข้อมูล
+      ↓
+handleChange อัปเดต values
+      ↓
+ผู้ใช้กด Sign up
+      ↓
+handleSubmit เรียก validate
+      ↓
+มี Error หรือไม่
+   ↙           ↘
+มี Error       ไม่มี Error
+   ↓               ↓
+แสดง Error     isSuccess = true
+                   ↓
+           แสดงหน้าสมัครสำเร็จ
+                   ↓
+           กด Continue ไป Login

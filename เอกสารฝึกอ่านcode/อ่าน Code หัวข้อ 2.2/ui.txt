@@ -1,0 +1,5 @@
+[src/components/ui/alert-dialog.jsx]
+ไฟล์นี้เป็น component dialog หรือ popup modal ใช้แสดงกล่องยืนยันหรือแจ้งเตือน เช่น ตอนยืนยันเปลี่ยนรหัสผ่าน หรือเตือนให้ login ก่อนใช้งานบางอย่าง
+
+[src/components/ui/select.jsx]
+ไฟล์นี้เป็น component dropdown select ใช้สำหรับให้ผู้ใช้เลือกข้อมูลจากรายการ เช่น เลือก category หรือ filter สถานะต่าง ๆ

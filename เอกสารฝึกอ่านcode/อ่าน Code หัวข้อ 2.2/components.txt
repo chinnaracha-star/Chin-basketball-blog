@@ -1,0 +1,23 @@
+src/components/ArticleSection.jsx
+ส่วนแสดงบทความล่าสุด มี category, search และปุ่ม view more
+
+src/components/BlogCard.jsx
+การ์ดแสดงข้อมูลบทความ 1 ชิ้น เช่น รูป ชื่อ หมวดหมู่ ผู้เขียน
+
+src/components/Footer.jsx
+ส่วนท้ายเว็บ มี social link และลิงก์กลับหน้า Home
+
+src/components/HeroSection.jsx
+ส่วนบนของหน้าแรก ใช้แสดงข้อความหลักและรูปเด่น
+
+src/components/MemberLayout.jsx
+layout กลางของฝั่งสมาชิก/แอดมิน มี sidebar และพื้นที่เนื้อหา
+
+src/components/NavBar.jsx
+แถบเมนูด้านบน ใช้นำทางและเปิดเมนูผู้ใช้/notification
+
+src/components/index.js
+ไฟล์รวม export component เพื่อ import ใช้งานได้ง่าย
+
+src/components/ui/
+เก็บ UI component พื้นฐาน เช่น dialog หรือ select

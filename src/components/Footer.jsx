@@ -3,11 +3,13 @@ import githubIcon from "../assets/icons/github.svg";
 import googleIcon from "../assets/icons/google.svg";
 import lineIcon from "../assets/icons/line.svg";
 import linkedinIcon from "../assets/icons/linkedin.svg";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
+        {/* --- Social Media Links --- */}
         <div className="footer-social">
           <p>Get in touch</p>
 
@@ -40,9 +42,10 @@ export function Footer() {
           </ul>
         </div>
 
-        <a className="footer-home" href="#">
+        {/* ลิงก์กลับไปยังหน้า Home โดยไม่ reload เว็บไซต์ */}
+        <Link className="footer-home" to="/">
           Home page
-        </a>
+        </Link>
       </div>
     </footer>
   );

@@ -1,0 +1,275 @@
+React Router Building Personal Blog
+Assignment Part 2.3
+
+ภาพรวม
+หัวข้อนี้เป็นโจทย์เสริมต่อจาก React Router Personal Blog โดยโฟกัสที่การทำ UI และ Routing ของฝั่ง Admin ให้ครบมากขึ้น
+
+หมายเหตุสำคัญ
+- Assignment นี้ใช้เวลาค่อนข้างเยอะ ไม่จำเป็นต้องทำให้เสร็จภายในวันเดียว
+- ยังไม่ต้องทำระบบ login จริง
+- ยังไม่ต้องทำระบบตรวจสอบสิทธิ์จริง
+- ให้โฟกัสที่ UI, routing และ flow การใช้งานของหน้า Admin
+- ทำเพื่อเตรียมต่อยอดไป Part Backend ภายหลัง
+
+เป้าหมายหลัก
+- ผู้ใช้สามารถ navigate ภายใน Admin ได้
+- ผู้ใช้สามารถดู ค้นหา และกรองบทความได้
+- ผู้ใช้สามารถสร้างบทความใหม่ได้
+- ผู้ใช้สามารถเลือกบันทึกเป็น draft หรือ publish ได้
+- หลังสร้างบทความสำเร็จ ต้องแสดงผลลัพธ์ที่เหมาะสม
+- ผู้ใช้สามารถแก้ไขบทความได้
+- ผู้ใช้สามารถลบบทความได้ โดยต้อง confirm ก่อนลบ
+
+Requirement #1: Navigate ภายใน Admin
+ผู้ใช้งานต้องสามารถไปยังหน้าต่าง ๆ ภายใน Admin ได้
+
+หน้าที่ควรมีใน sidebar
+- Article management
+- Category management
+- Profile
+- Notification
+- Reset password
+
+สิ่งที่ควรสังเกต
+- Sidebar ควรเป็นส่วนหนึ่งของ layout กลาง เช่น MemberLayout หรือ AdminLayout
+- Link ใน sidebar ควรพาไป route ที่ถูกต้อง
+- หน้า admin และ member อาจใช้ layout ร่วมกันได้ ถ้าโครงเหมือนกัน
+
+Requirement #2: ดูรายการบทความ ค้นหา และกรองบทความ
+ผู้ใช้งานต้องเห็นรายการบทความทั้งหมดในหน้า Article management
+
+สิ่งที่ต้องมี
+- ตารางหรือ list แสดงบทความ
+- Search สำหรับค้นหาบทความ
+- Filter ตาม status เช่น draft หรือ published
+- Filter ตาม category
+- แต่ละบทความต้องแสดงสถานะของตัวเอง
+
+สิ่งที่ควรฝึกอ่าน/เขียน
+- useState สำหรับ search keyword
+- useState สำหรับ selected status/category
+- filter array เพื่อแสดงเฉพาะบทความที่ตรงเงื่อนไข
+- map array เพื่อ render รายการบทความ
+- แสดง badge หรือ label สำหรับ status
+
+Requirement #3: สร้างบทความใหม่
+ผู้ใช้งานต้องสามารถสร้างบทความใหม่ได้
+
+สิ่งที่ต้องมี
+- ปุ่ม Create article ในหน้า Article management
+- หน้า form สำหรับกรอกข้อมูลบทความ
+- ช่องอัปโหลดรูป thumbnail
+- ช่องเลือก category
+- ช่อง title
+- ช่อง introduction
+- ช่อง content
+- ปุ่ม Save as draft
+- ปุ่ม Save and publish
+
+แนวคิดสำคัญ
+- Form state ใช้เก็บข้อมูลบทความที่กรอก
+- Action ที่กดจะเป็นตัวกำหนด status ของบทความ
+- ถ้ากด Save as draft ให้ status เป็น Draft
+- ถ้ากด Save and publish ให้ status เป็น Published
+
+Requirement #4: แสดงผลหลังสร้างบทความสำเร็จ
+เมื่อสร้างบทความสำเร็จ ระบบต้องบอกผู้ใช้ และบทความต้องไปอยู่ในรายการตามสถานะที่เลือก
+
+สิ่งที่ต้องมี
+- Success message เช่น toast
+- หลังสร้างเสร็จควร navigate กลับหน้า Article management
+- บทความใหม่ต้องแสดงในรายการ
+- ถ้าบันทึกเป็น draft ต้องแสดง status draft
+- ถ้า publish ต้องแสดง status published
+
+สิ่งที่ควรคิดเพิ่ม
+- ถ้ายังไม่มี backend ให้ใช้ mock data หรือ state จำลองก่อน
+- ถ้า refresh แล้วข้อมูลหายได้ ถือว่ายังพอรับได้ในขอบเขต UI/mock
+- ถ้าอยากให้ข้อมูลอยู่ต่อชั่วคราว อาจใช้ localStorage ได้ในภายหลัง
+
+Requirement #5: แก้ไขบทความ
+ผู้ใช้งานต้องสามารถกด edit เพื่อไปหน้าแก้ไขบทความ และบันทึกการเปลี่ยนแปลงได้
+
+สิ่งที่ต้องมี
+- ปุ่ม Edit ในแต่ละบทความ
+- Route สำหรับหน้าแก้ไข เช่น /admin/articles/:articleId/edit
+- ใช้ form เดียวกับหน้า create ได้
+- เมื่อเข้าหน้า edit ต้องเติมข้อมูลเดิมลง form
+- เมื่อกด save ต้องอัปเดตข้อมูลบทความ
+
+แนวคิดสำคัญ
+- Create และ Edit ใช้ component form ร่วมกันได้
+- ความต่างคือ create เริ่มด้วยค่าว่าง แต่ edit เริ่มด้วยข้อมูลเดิม
+- ใช้ useParams เพื่ออ่าน articleId จาก URL ได้
+- หลังบันทึกแล้วควรแสดง toast และกลับหน้า list
+
+Requirement #6: ลบบทความ
+ผู้ใช้งานต้องสามารถลบบทความได้ และต้องมีการยืนยันก่อนลบ
+
+สิ่งที่ต้องมี
+- ปุ่ม Delete ในแต่ละบทความ
+- Dialog หรือ Modal ยืนยันก่อนลบ
+- ปุ่ม Cancel
+- ปุ่ม Delete
+- เมื่อลบสำเร็จ บทความต้องหายจากรายการ
+
+แนวคิดสำคัญ
+- เก็บ article ที่กำลังจะลบไว้ใน state
+- เปิด dialog เมื่อกด Delete
+- ถ้ากด Cancel ให้ปิด dialog โดยไม่ลบ
+- ถ้ากด Delete ให้ลบออกจาก list แล้วแสดง success message
+
+ไฟล์ที่น่าจะเกี่ยวข้อง
+- src/App.jsx
+- src/components/MemberLayout.jsx
+- src/pages/AdminPanelPage.jsx
+- src/pages/CategoryManagementPage.jsx
+- src/pages/CreateArticlePage.jsx
+- src/pages/ProfilePage.jsx
+- src/pages/NotificationPage.jsx
+- src/pages/ResetPasswordPage.jsx
+- src/data/memberMock.js
+- src/components/ui/alert-dialog.jsx
+- src/components/ui/select.jsx
+
+Route ที่ควรมีหรือควรตรวจสอบ
+- /admin
+- /admin/categories
+- /admin/articles/create
+- /admin/articles/:articleId/edit
+- /member/profile
+- /member/notifications
+- /member/reset-password
+
+ลำดับแนะนำในการทำ
+1. ตรวจ sidebar ก่อนว่า navigate ไปทุกหน้าที่โจทย์กำหนดได้ไหม
+2. ทำ Article management ให้แสดง list, search และ filter ได้
+3. ทำปุ่ม Create article และ route ไปหน้า form
+4. ทำ form ให้ save เป็น draft หรือ published ได้
+5. ทำ success message และให้บทความใหม่กลับมาแสดงใน list
+6. ทำ edit โดยใช้ form เดียวกับ create
+7. ทำ delete พร้อม confirm dialog
+8. ทดสอบ flow ทั้งหมดจาก sidebar จนถึง create/edit/delete
+
+ลำดับแนะนำในการอ่านโค้ด
+1. เปิด src/App.jsx เพื่อดู route ทั้งหมด
+2. เปิด src/components/MemberLayout.jsx เพื่อดู sidebar และ layout
+3. เปิด src/data/memberMock.js เพื่อดู mock article data
+4. เปิด src/pages/AdminPanelPage.jsx เพื่อดู list/search/filter/action
+5. เปิด src/pages/CreateArticlePage.jsx เพื่อดู form create article
+6. เปิด src/components/ui/alert-dialog.jsx เพื่อดู dialog ที่ใช้ confirm delete
+7. เปิด src/components/ui/select.jsx เพื่อดู dropdown/filter
+
+สรุปสั้น
+Part 2.3 คือการทำ Admin Part ให้ใช้งานได้ครบขึ้น โดยเน้น navigation, article management, create draft/publish, edit 
+และ delete พร้อม confirm ก่อนลบ
+
+Requirement #7: ดูรายการหมวดหมู่ ค้นหา แก้ไข และลบ
+ผู้ใช้งานต้องสามารถดูรายการหมวดหมู่ทั้งหมดในหน้า Category management และค้นหาหมวดหมู่ได้
+
+สิ่งที่ต้องมี
+- Search สำหรับค้นหาหมวดหมู่
+- ตารางหรือ list แสดงชื่อหมวดหมู่
+- แสดงจำนวนบทความในแต่ละหมวดหมู่
+- ปุ่ม Edit สำหรับแก้ไขหมวดหมู่
+- ปุ่ม Delete สำหรับลบหมวดหมู่
+
+แนวคิดสำคัญ
+- ใช้ useState เก็บ search keyword
+- ใช้ filter เพื่อแสดงหมวดหมู่ที่ตรงกับคำค้นหา
+- จำนวนบทความของแต่ละหมวดหมู่คำนวณจาก article list
+- Edit ควรพาไปหน้า form แก้ไข
+- Delete ควรเปิด dialog ยืนยันก่อนลบ
+
+Requirement #8: สร้างหมวดหมู่ใหม่
+ผู้ใช้งานต้องสามารถสร้างหมวดหมู่ใหม่ได้ และเมื่อสร้างสำเร็จต้องมีข้อความแจ้งผลลัพธ์
+
+สิ่งที่ต้องมี
+- ปุ่ม Create category
+- Route สำหรับหน้า create category
+- Form สำหรับกรอกชื่อหมวดหมู่
+- Validation เช่น ห้ามเว้นว่าง และห้ามชื่อซ้ำ
+- Success message เช่น toast หลังสร้างสำเร็จ
+- หลังสร้างเสร็จควรกลับไปหน้า Category management
+
+Requirement #9: แก้ไขและลบหมวดหมู่
+ผู้ใช้งานต้องสามารถแก้ไขหมวดหมู่ และลบหมวดหมู่ได้ โดยการลบต้องยืนยันก่อน
+
+สิ่งที่ต้องมี
+- Route สำหรับหน้า edit category
+- Form เดียวกับ create category แต่เติมข้อมูลเดิมเข้าไป
+- Save changes สำหรับบันทึกการแก้ไข
+- Confirm dialog ก่อนลบ
+- ปุ่ม Cancel และ Delete ใน dialog
+- Success message หลังแก้ไขสำเร็จ
+
+Requirement #10: ดูและแก้ไขโปรไฟล์
+ผู้ใช้งานต้องสามารถดูและแก้ไขข้อมูลโปรไฟล์ของตัวเองได้
+
+สิ่งที่ต้องมี
+- Form แสดงข้อมูล profile
+- แก้ไข name, username, email และ bio ได้
+- อัปโหลดรูปโปรไฟล์ได้
+- กด Save แล้วแสดง success message
+
+ไฟล์ที่เกี่ยวข้อง
+- src/pages/ProfilePage.jsx
+- src/data/memberMock.js
+
+Requirement #11: ดู notification และไปหน้าที่เกี่ยวข้อง
+ผู้ใช้งานต้องสามารถดูรายการ notification ภายในหน้า Admin และกดดูรายละเอียดหรือไปยังหน้าที่เกี่ยวข้องได้
+
+สิ่งที่ต้องมี
+- Mock data สำหรับ notification
+- แสดง title, detail และ time
+- มีปุ่ม View หรือ action link
+- กดแล้วไปยัง route ที่เกี่ยวข้อง เช่น profile, reset password หรือ article management
+
+ไฟล์ที่เกี่ยวข้อง
+- src/pages/NotificationPage.jsx
+- src/data/memberMock.js
+
+Requirement #12: เปลี่ยนรหัสผ่านพร้อม confirm
+ผู้ใช้งานต้องสามารถเปลี่ยนรหัสผ่านได้ และต้อง confirm ก่อนดำเนินการ
+
+สิ่งที่ต้องมี
+- Form current password, new password, confirm password
+- Validation ก่อนเปิด dialog
+- Confirm dialog ก่อน reset password
+- ปุ่ม Cancel และ Reset
+- Success message หลัง reset สำเร็จ
+
+ไฟล์ที่เกี่ยวข้อง
+- src/pages/ResetPasswordPage.jsx
+- src/components/ui/alert-dialog.jsx
+
+ไฟล์ใหม่/ไฟล์สำคัญที่เพิ่มสำหรับ Requirement #7-#12
+- src/context/AdminCategoriesContext.js
+- src/context/AdminCategoriesProvider.jsx
+- src/hooks/useAdminCategories.js
+- src/pages/CategoryFormPage.jsx
+- src/pages/CategoryManagementPage.jsx
+- src/pages/ProfilePage.jsx
+- src/pages/NotificationPage.jsx
+- src/pages/ResetPasswordPage.jsx
+- src/App.jsx
+
+Route ที่เพิ่มสำหรับ Category management
+- /admin/categories
+- /admin/categories/create
+- /admin/categories/:categoryId/edit
+
+ลำดับแนะนำในการอ่านโค้ดส่วน Category
+1. เปิด src/context/AdminCategoriesProvider.jsx เพื่อดู category mock store
+2. เปิด src/hooks/useAdminCategories.js เพื่อดู custom hook ที่ใช้เรียก category data
+3. เปิด src/pages/CategoryManagementPage.jsx เพื่อดู search, list, edit link และ delete dialog
+4. เปิด src/pages/CategoryFormPage.jsx เพื่อดู create/edit form และ validation
+5. เปิด src/pages/AdminPanelPage.jsx และ src/pages/CreateArticlePage.jsx เพื่อดูการนำ categories ไปใช้ใน filter/dropdown
+
+
+สรุปสั้น
+Part 2.3 คือการทำ Admin Part ให้ใช้งานได้ครบขึ้น โดยเน้น navigation, article management, create draft/publish, edit 
+และ delete พร้อม confirm ก่อนลบ
+สรุปเพิ่มเติม
+Requirement #7-#12 ทำให้ Admin Part ครบขึ้นจากแค่จัดการบทความ ไปสู่การจัดการหมวดหมู่ 
+โปรไฟล์ notification และ reset password พร้อม flow แบบ mock UI ที่พร้อมต่อ backend ภายหลัง

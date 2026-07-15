@@ -1,0 +1,996 @@
+ภาพรวมก่อน: ไฟล์ ArticleSection.jsx คือส่วนที่ใช้แสดงบทความในหน้าเว็บ มีหน้าที่หลัก ๆ คือ
+
+แสดงบทความล่าสุด
+เลือกหมวดหมู่บทความได้
+ค้นหาบทความได้
+กด View more เพื่อโหลดบทความเพิ่มได้
+แสดง Loading, Error และข้อความเมื่อไม่มีข้อมูล
+1. ส่วน Import คือการเรียกของที่ต้องใช้เข้ามา
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import BlogCard from "./BlogCard";
+
+อธิบายง่าย ๆ คือ ก่อนจะเขียน Component นี้ เราต้องเอาเครื่องมือที่จำเป็นเข้ามาก่อน
+
+axios
+import axios from "axios";
+
+ใช้สำหรับเรียก API หรือดึงข้อมูลจาก Server
+
+ในไฟล์นี้ใช้เพื่อดึงข้อมูลบทความจากเว็บ API
+
+useState
+import { useEffect, useState } from "react";
+
+useState ใช้เก็บข้อมูลที่เปลี่ยนแปลงได้ในหน้าเว็บ
+
+เช่น
+
+หมวดหมู่ที่เลือกอยู่
+รายการบทความ
+หน้าปัจจุบัน
+ข้อความค้นหา
+สถานะ Loading
+ข้อความ Error
+
+พูดง่าย ๆ คือ useState เป็นเหมือน “ความจำของ Component”
+
+useEffect
+
+useEffect ใช้สั่งให้ React ทำงานบางอย่างอัตโนมัติ
+
+ในไฟล์นี้ใช้ทำ 2 อย่าง
+
+รอให้ผู้ใช้หยุดพิมพ์ก่อนค้นหา
+ดึงข้อมูลบทความจาก API
+Link
+import { Link } from "react-router-dom";
+
+ใช้สำหรับกดแล้วเปลี่ยนหน้า เช่น กดชื่อบทความแล้วไปหน้ารายละเอียดบทความ
+
+<Link to={`/post/${post.id}`}>
+  {post.title}
+</Link>
+
+ถ้า post.id คือ 5 ลิงก์จะพาไปที่
+
+/post/5
+BlogCard
+import BlogCard from "./BlogCard";
+
+BlogCard คือ Component ลูก ที่ใช้แสดงบทความแต่ละใบ
+
+เช่นบทความ 1 อัน ก็แสดงเป็น Card 1 ใบ
+
+2. ส่วน Select คือ Dropdown เลือกหมวดหมู่
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+
+ส่วนนี้เอา Component Dropdown เข้ามาใช้
+
+อธิบายง่าย ๆ:
+
+ชื่อ	หน้าที่
+Select	กล่อง Dropdown ทั้งหมด
+SelectTrigger	ปุ่มที่กดเพื่อเปิด Dropdown
+SelectValue	ข้อความที่แสดงว่าตอนนี้เลือกอะไรอยู่
+SelectContent	กล่องรายการตัวเลือก
+SelectItem	ตัวเลือกแต่ละอัน
+
+เช่น Dropdown มีตัวเลือก
+
+Highlight
+Cat
+Inspiration
+General
+3. ส่วนค่าคงที่ด้านบน
+const API_URL = "https://blog-post-project-api.vercel.app/posts";
+const POSTS_PER_PAGE = 6;
+const categories = ["Highlight", "Cat", "Inspiration", "General"];
+
+ส่วนนี้เป็นการกำหนดค่าที่เอาไว้ใช้ซ้ำ
+
+API_URL
+const API_URL = "https://blog-post-project-api.vercel.app/posts";
+
+คือ URL ของ API ที่ใช้ดึงบทความ
+
+พูดง่าย ๆ คือ เป็น “ที่อยู่ของ Server” ที่เราจะไปขอข้อมูลบทความ
+
+POSTS_PER_PAGE
+const POSTS_PER_PAGE = 6;
+
+กำหนดว่าโหลดบทความครั้งละ 6 บทความ
+
+เช่น
+
+หน้า 1 โหลด 6 บทความแรก
+หน้า 2 โหลดอีก 6 บทความ
+หน้า 3 โหลดอีก 6 บทความ
+categories
+const categories = ["Highlight", "Cat", "Inspiration", "General"];
+
+เป็น Array เก็บชื่อหมวดหมู่ทั้งหมด
+
+Array นี้เอาไปใช้สร้างทั้ง
+
+ปุ่มหมวดหมู่ด้านบน
+Dropdown เลือกหมวดหมู่
+
+ข้อดีคือ ถ้าอยากเพิ่มหมวดใหม่ แก้ที่เดียวพอ
+
+4. เริ่มสร้าง Component
+function ArticleSection() {
+
+ตรงนี้คือการสร้าง Component ชื่อ ArticleSection
+
+Component นี้จะเป็นส่วนที่แสดงบทความทั้งหมดบนหน้าเว็บ
+
+5. useState แต่ละตัวคืออะไร
+
+ส่วนนี้สำคัญมาก เพราะเป็น “ข้อมูลหลัก” ของหน้านี้
+
+const [selectedCategory, setSelectedCategory] = useState("Highlight");
+5.1 selectedCategory
+
+ใช้เก็บหมวดหมู่ที่เลือกอยู่ตอนนี้
+
+ค่าเริ่มต้นคือ
+
+"Highlight"
+
+แปลว่า ตอนเปิดหน้าเว็บครั้งแรก จะเลือกหมวด Highlight ก่อน
+
+ถ้าผู้ใช้กดหมวด Cat ค่า selectedCategory ก็จะเปลี่ยนเป็น
+
+"Cat"
+const [posts, setPosts] = useState([]);
+5.2 posts
+
+ใช้เก็บรายการบทความที่ได้มาจาก API
+
+ค่าเริ่มต้นคือ Array ว่าง
+
+[]
+
+พอ API ส่งข้อมูลกลับมา เราก็เอาข้อมูลมาใส่ใน posts
+
+จากนั้น React จะเอา posts ไปวนแสดงเป็น BlogCard
+
+const [page, setPage] = useState(1);
+5.3 page
+
+ใช้เก็บเลขหน้าปัจจุบัน
+
+ค่าเริ่มต้นคือหน้า 1
+
+เวลาผู้ใช้กด View more
+
+page 1 → page 2 → page 3
+
+เมื่อ page เปลี่ยน ระบบจะไปดึงบทความหน้าถัดไปจาก API
+
+const [hasMore, setHasMore] = useState(true);
+5.4 hasMore
+
+ใช้บอกว่ายังมีบทความหน้าถัดไปอีกไหม
+
+ถ้าเป็น true แปลว่า ยังมีข้อมูลให้โหลดต่อ
+
+ถ้าเป็น false แปลว่า โหลดหมดแล้ว
+
+ตัวนี้ใช้ควบคุมว่าจะแสดงปุ่ม View more หรือไม่
+
+const [isLoading, setIsLoading] = useState(false);
+5.5 isLoading
+
+ใช้บอกว่าตอนนี้กำลังโหลดข้อมูลอยู่ไหม
+
+ถ้าเป็น true แปลว่ากำลังโหลด
+
+ถ้าเป็น false แปลว่าโหลดเสร็จแล้ว
+
+เอาไปใช้กับปุ่ม เช่น
+
+{isLoading ? "Loading..." : "View more"}
+
+ถ้ากำลังโหลด ปุ่มจะแสดงคำว่า Loading...
+
+const [error, setError] = useState("");
+5.6 error
+
+ใช้เก็บข้อความ Error
+
+ค่าเริ่มต้นคือข้อความว่าง
+
+""
+
+ถ้า API มีปัญหา จะเปลี่ยนเป็นข้อความนี้
+
+"Unable to load articles. Please try again."
+
+แล้วเอาไปแสดงบนหน้าเว็บ
+
+const [searchTerm, setSearchTerm] = useState("");
+5.7 searchTerm
+
+ใช้เก็บข้อความที่ผู้ใช้กำลังพิมพ์ในช่อง Search
+
+เช่น ผู้ใช้พิมพ์คำว่า
+
+cat
+
+ค่า searchTerm ก็จะเป็น
+
+"cat"
+
+ค่านี้เปลี่ยนทันทีทุกครั้งที่พิมพ์
+
+const [keyword, setKeyword] = useState("");
+5.8 keyword
+
+ใช้เก็บคำค้นหาที่พร้อมส่งไปหา API
+
+ตรงนี้หลายคนงง เพราะมีทั้ง searchTerm และ keyword
+
+ให้จำแบบนี้:
+
+State	ความหมาย
+searchTerm	ข้อความที่ผู้ใช้กำลังพิมพ์
+keyword	คำที่รอครบ 350ms แล้ว พร้อมส่งไปค้นหา
+
+เหตุผลที่ต้องแยก เพราะเราไม่อยากให้ API ถูกเรียกทุกครั้งที่พิมพ์ 1 ตัวอักษร
+
+const [isSearchFocused, setIsSearchFocused] = useState(false);
+5.9 isSearchFocused
+
+ใช้ดูว่าผู้ใช้กำลังคลิกอยู่ในช่อง Search หรือเปล่า
+
+ถ้าเป็น true แปลว่าผู้ใช้กำลังใช้งานช่อง Search
+
+ถ้าเป็น false แปลว่าผู้ออกจากช่อง Search แล้ว
+
+ใช้เพื่อเปิด/ปิดกล่องผลการค้นหา
+
+6. useEffect ตัวแรก: Debounce Search
+useEffect(() => {
+  const timeoutId = window.setTimeout(() => {
+    setPosts([]);
+    setPage(1);
+    setHasMore(true);
+    setKeyword(searchTerm.trim());
+  }, 350);
+
+  return () => window.clearTimeout(timeoutId);
+}, [searchTerm]);
+
+ส่วนนี้คือระบบรอให้ผู้ใช้หยุดพิมพ์ก่อนค้นหา
+
+เรียกว่า Debounce
+
+อธิบายแบบง่าย
+
+สมมติผู้ใช้พิมพ์คำว่า
+
+cat
+
+ถ้าไม่มี Debounce ระบบอาจยิง API 3 ครั้ง
+
+c
+ca
+cat
+
+แต่ถ้ามี Debounce ระบบจะรอ 350ms ก่อน
+
+ถ้าผู้ใช้หยุดพิมพ์แล้วจริง ๆ ค่อยเอาคำว่า cat ไปค้นหา
+
+Step by step
+
+เมื่อผู้ใช้พิมพ์ในช่อง Search
+
+onChange={(event) => setSearchTerm(event.target.value)}
+
+ค่า searchTerm จะเปลี่ยน
+
+พอ searchTerm เปลี่ยน useEffect ตัวนี้จะทำงาน
+
+สร้างตัวจับเวลา
+const timeoutId = window.setTimeout(() => {
+
+คำสั่งนี้บอกว่า ให้รอแป๊บหนึ่งก่อนค่อยทำงาน
+
+รอ 350ms
+}, 350);
+
+แปลว่ารอ 350 มิลลิวินาที หรือประมาณ 0.35 วินาที
+
+ล้างบทความเก่า
+setPosts([]);
+
+เพราะกำลังจะค้นหาคำใหม่ จึงล้างข้อมูลเก่าออกก่อน
+
+กลับไปหน้าแรก
+setPage(1);
+
+เวลาค้นหาใหม่ ต้องเริ่มจากหน้า 1 เสมอ
+
+ตั้งว่ายังมีข้อมูลให้โหลดต่อ
+setHasMore(true);
+
+ตั้งค่าเริ่มต้นไว้ก่อนว่าอาจจะยังมีหน้าถัดไป
+
+เอาคำค้นหาไปใส่ keyword
+setKeyword(searchTerm.trim());
+
+trim() คือตัดช่องว่างหน้าหลังออก
+
+เช่น
+
+"   cat   "
+
+จะกลายเป็น
+
+"cat"
+ล้าง Timer เก่า
+return () => window.clearTimeout(timeoutId);
+
+ถ้าผู้ใช้ยังพิมพ์ไม่หยุด Timer เก่าจะถูกยกเลิก
+
+จากนั้นจะเริ่มนับเวลาใหม่
+
+นี่คือหัวใจของ Debounce
+
+7. useEffect ตัวที่สอง: ดึงบทความจาก API
+useEffect(() => {
+  const controller = new AbortController();
+
+  async function fetchPosts() {
+    ...
+  }
+
+  fetchPosts();
+
+  return () => controller.abort();
+}, [page, selectedCategory, keyword]);
+
+useEffect ตัวนี้ใช้ดึงบทความจาก API
+
+มันจะทำงานเมื่อค่าเหล่านี้เปลี่ยน
+
+[page, selectedCategory, keyword]
+
+หมายความว่า API จะถูกเรียกใหม่เมื่อ
+
+เปลี่ยนหน้า
+เปลี่ยนหมวดหมู่
+ค้นหาคำใหม่
+8. AbortController คืออะไร
+const controller = new AbortController();
+
+AbortController ใช้สำหรับยกเลิก Request เก่า
+
+ตัวอย่าง:
+
+ผู้ใช้เลือกหมวด Cat
+API กำลังโหลด Cat
+ผู้ใช้เปลี่ยนไปเลือก General ทันที
+Request ของ Cat ควรถูกยกเลิก
+แล้วโหลด General แทน
+
+ถ้าไม่ยกเลิก Request เก่า บางครั้งข้อมูลเก่าอาจกลับมาแสดงทับข้อมูลใหม่ได้
+
+9. ฟังก์ชัน fetchPosts
+async function fetchPosts() {
+
+ฟังก์ชันนี้ใช้ดึงข้อมูลบทความ
+
+ที่ต้องใช้ async เพราะการเรียก API ต้องใช้เวลารอข้อมูลจาก Server
+
+เริ่มโหลด
+setIsLoading(true);
+setError("");
+
+ก่อนเรียก API เราตั้งค่า Loading เป็น true
+
+และล้าง Error เก่าออก
+
+แปลว่า “ตอนนี้กำลังโหลดข้อมูลใหม่แล้วนะ”
+
+10. เรียก API ด้วย axios
+const response = await axios.get(API_URL, {
+  params: {
+    page,
+    limit: POSTS_PER_PAGE,
+    category:
+      selectedCategory === "Highlight" ? undefined : selectedCategory,
+    keyword: keyword || undefined,
+  },
+  signal: controller.signal,
+});
+
+ตรงนี้คือการส่ง Request ไปหา API
+
+ส่ง page
+page,
+
+ส่งเลขหน้าปัจจุบันไปให้ API
+
+เช่น
+
+page=1
+ส่ง limit
+limit: POSTS_PER_PAGE,
+
+บอก API ว่า ขอข้อมูลครั้งละ 6 บทความ
+
+เพราะ POSTS_PER_PAGE มีค่าเป็น 6
+
+ส่ง category
+category:
+  selectedCategory === "Highlight" ? undefined : selectedCategory,
+
+ตรงนี้แปลว่า
+
+ถ้าเลือก Highlight จะไม่ส่ง category ไป
+
+แต่ถ้าเลือกหมวดอื่น เช่น Cat จะส่ง
+
+category=Cat
+
+เหตุผลคือ Highlight อาจเป็นหมวดพิเศษ หรือเป็นค่าเริ่มต้นที่ไม่ต้อง filter category
+
+ส่ง keyword
+keyword: keyword || undefined,
+
+ถ้ามีคำค้นหา ก็ส่ง keyword ไป
+
+เช่น
+
+keyword=cat
+
+แต่ถ้าไม่มีคำค้นหา ก็ไม่ต้องส่ง keyword
+
+ส่ง signal
+signal: controller.signal,
+
+เอาไว้ให้ Request นี้ถูกยกเลิกได้ ถ้ามีการเปลี่ยนค่าใหม่
+
+11. รับข้อมูลจาก API
+const { posts: newPosts, currentPage, totalPages } = response.data;
+
+API ส่งข้อมูลกลับมา แล้วเราแกะข้อมูลออกมาใช้
+
+สมมติ API ส่งกลับมาแบบนี้
+
+{
+  posts: [...],
+  currentPage: 1,
+  totalPages: 4
+}
+
+เราก็เอาค่าออกมาเป็น
+
+newPosts
+currentPage
+totalPages
+
+ที่ใช้ชื่อ newPosts เพราะใน Component มี State ชื่อ posts อยู่แล้ว
+
+ถ้าใช้ชื่อซ้ำกันจะอ่านยาก จึงเปลี่ยนชื่อเป็น newPosts
+
+12. เอาบทความใส่ State
+setPosts((previousPosts) =>
+  page === 1 ? newPosts : [...previousPosts, ...newPosts],
+);
+
+ตรงนี้สำคัญมาก
+
+คือการบอกว่า ถ้าเป็นหน้าแรก ให้แทนที่ข้อมูลเดิม
+
+แต่ถ้าเป็นหน้าถัดไป ให้เอาข้อมูลใหม่มาต่อท้าย
+
+ถ้า page === 1
+page === 1 ? newPosts
+
+ถ้าเป็นหน้า 1 ให้ใช้ข้อมูลใหม่แทนข้อมูลเก่าเลย
+
+ใช้ในกรณี
+
+เปิดเว็บครั้งแรก
+เปลี่ยนหมวดหมู่
+ค้นหาใหม่
+ถ้าไม่ใช่หน้า 1
+[...previousPosts, ...newPosts]
+
+แปลว่าเอาข้อมูลเก่ากับข้อมูลใหม่มาต่อกัน
+
+ตัวอย่าง:
+
+ข้อมูลเก่า
+
+["บทความ 1", "บทความ 2"]
+
+ข้อมูลใหม่
+
+["บทความ 3", "บทความ 4"]
+
+ผลลัพธ์
+
+["บทความ 1", "บทความ 2", "บทความ 3", "บทความ 4"]
+
+นี่คือการทำงานของปุ่ม View more
+
+13. เช็กว่ายังมีหน้าถัดไปไหม
+setHasMore(currentPage < totalPages);
+
+ถ้า currentPage ยังน้อยกว่า totalPages แปลว่ายังมีหน้าถัดไป
+
+ตัวอย่าง:
+
+currentPage = 1
+totalPages = 4
+
+แปลว่ายังมีหน้า 2, 3, 4
+
+ดังนั้น hasMore เป็น true
+
+แต่ถ้า
+
+currentPage = 4
+totalPages = 4
+
+แปลว่าอยู่หน้าสุดท้ายแล้ว
+
+ดังนั้น hasMore เป็น false
+
+ปุ่ม View more ก็จะหายไป
+
+14. ถ้า API Error
+catch (requestError) {
+  if (!axios.isCancel(requestError)) {
+    console.error("Error fetching posts:", requestError);
+    setError("Unable to load articles. Please try again.");
+  }
+}
+
+ถ้าเรียก API ไม่สำเร็จ จะเข้ามาที่ catch
+
+เช่น
+
+Internet มีปัญหา
+Server ล่ม
+URL ผิด
+
+จากนั้นจะตั้งค่า error
+
+setError("Unable to load articles. Please try again.");
+
+แล้วเอาข้อความนี้ไปแสดงบนหน้าเว็บ
+
+15. ปิด Loading
+finally {
+  if (!controller.signal.aborted) {
+    setIsLoading(false);
+  }
+}
+
+finally คือส่วนที่ทำงานเสมอ ไม่ว่าจะโหลดสำเร็จหรือ Error
+
+ตรงนี้ใช้ปิด Loading
+
+setIsLoading(false);
+
+แปลว่า โหลดเสร็จแล้ว
+
+16. เรียกใช้ fetchPosts
+fetchPosts();
+
+ถึงแม้เราจะสร้างฟังก์ชัน fetchPosts แล้ว แต่ถ้าไม่เรียกใช้ มันจะไม่ทำงาน
+
+บรรทัดนี้คือการเริ่มดึงข้อมูลจริง
+
+17. Cleanup ของ useEffect
+return () => controller.abort();
+
+เมื่อ Component ถูกถอดออก หรือค่าพวกนี้เปลี่ยน
+
+[page, selectedCategory, keyword]
+
+Request เก่าจะถูกยกเลิก
+
+ช่วยป้องกันปัญหาข้อมูลเก่ากลับมาแสดงผิดจังหวะ
+
+18. ฟังก์ชันเปลี่ยนหมวดหมู่
+function handleCategoryChange(category) {
+  if (category === selectedCategory) return;
+
+  setPosts([]);
+  setPage(1);
+  setHasMore(true);
+  setSelectedCategory(category);
+}
+
+ฟังก์ชันนี้ทำงานตอนผู้ใช้เลือกหมวดหมู่ใหม่
+
+เช็กก่อนว่าเลือกหมวดเดิมไหม
+if (category === selectedCategory) return;
+
+ถ้าผู้ใช้กดหมวดเดิมที่เลือกอยู่แล้ว ก็ไม่ต้องทำอะไร
+
+ช่วยลดการเรียก API ซ้ำโดยไม่จำเป็น
+
+ล้างบทความเก่า
+setPosts([]);
+
+เพราะกำลังจะโหลดบทความของหมวดใหม่
+
+กลับไปหน้า 1
+setPage(1);
+
+เวลาเปลี่ยนหมวดหมู่ ต้องเริ่มจากหน้าแรกเสมอ
+
+ตั้งว่ายังมีหน้าถัดไป
+setHasMore(true);
+
+ตั้งค่าเริ่มต้นไว้ก่อน
+
+เปลี่ยนหมวดหมู่
+setSelectedCategory(category);
+
+เมื่อ selectedCategory เปลี่ยน useEffect ตัวดึง API จะทำงานใหม่
+
+19. ฟังก์ชัน View more
+function handleLoadMore() {
+  if (!isLoading && hasMore) {
+    setPage((currentPage) => currentPage + 1);
+  }
+}
+
+ฟังก์ชันนี้ทำงานตอนกดปุ่ม View more
+
+เช็กว่ากดได้ไหม
+if (!isLoading && hasMore)
+
+แปลว่า จะโหลดเพิ่มได้ก็ต่อเมื่อ
+
+ตอนนี้ไม่ได้กำลังโหลดอยู่
+ยังมีหน้าถัดไป
+เพิ่มเลขหน้า
+setPage((currentPage) => currentPage + 1);
+
+เช่น
+
+1 → 2
+2 → 3
+3 → 4
+
+พอ page เปลี่ยน useEffect จะไปดึงข้อมูลหน้าใหม่จาก API
+
+20. ส่วน return คือ JSX ที่แสดงบนหน้าเว็บ
+return (
+  <section className="article-section">
+
+ตรงนี้คือส่วนที่ React เอาไปแสดงบนหน้าเว็บ
+
+21. หัวข้อ Latest articles
+<h2 className="article-title">Latest articles</h2>
+
+แสดงหัวข้อของ Section นี้
+
+คือคำว่า
+
+Latest articles
+22. ปุ่มหมวดหมู่
+{categories.map((category) => (
+  <button
+    key={category}
+    type="button"
+    className={`article-tab ${selectedCategory === category ? "article-tab-active" : ""}`}
+    aria-pressed={selectedCategory === category}
+    disabled={selectedCategory === category}
+    onClick={() => handleCategoryChange(category)}
+  >
+    {category}
+  </button>
+))}
+
+ตรงนี้ใช้ map() วนสร้างปุ่มจาก Array categories
+
+Array มี 4 ตัว
+
+["Highlight", "Cat", "Inspiration", "General"]
+
+ดังนั้นจะสร้างปุ่ม 4 ปุ่ม
+
+key
+key={category}
+
+React ใช้ key เพื่อแยกแต่ละปุ่มออกจากกัน
+
+className แบบมีเงื่อนไข
+className={`article-tab ${selectedCategory === category ? "article-tab-active" : ""}`}
+
+ถ้าปุ่มนี้คือหมวดที่เลือกอยู่ จะเพิ่ม class
+
+article-tab-active
+
+เพื่อให้ปุ่มนั้นดูเด่นขึ้น
+
+ปุ่มที่เลือกอยู่จะกดซ้ำไม่ได้
+disabled={selectedCategory === category}
+
+ถ้าเลือกหมวดนี้อยู่แล้ว ปุ่มจะถูก disable
+
+เมื่อกดปุ่ม
+onClick={() => handleCategoryChange(category)}
+
+จะเรียกฟังก์ชันเปลี่ยนหมวดหมู่
+
+23. ช่อง Search
+<input
+  type="text"
+  placeholder="Search"
+  aria-label="Search articles"
+  value={searchTerm}
+  onChange={(event) => setSearchTerm(event.target.value)}
+  onFocus={() => setIsSearchFocused(true)}
+  onBlur={() => setIsSearchFocused(false)}
+  role="combobox"
+  aria-expanded={isSearchFocused && Boolean(keyword)}
+  aria-controls="article-search-results"
+  autoComplete="off"
+/>
+
+ช่องนี้คือช่องค้นหาบทความ
+
+value
+value={searchTerm}
+
+ช่อง input แสดงค่าจาก State searchTerm
+
+onChange
+onChange={(event) => setSearchTerm(event.target.value)}
+
+ทุกครั้งที่ผู้ใช้พิมพ์ จะเอาค่าไปเก็บใน searchTerm
+
+จากนั้น Debounce จะเริ่มทำงาน
+
+onFocus
+onFocus={() => setIsSearchFocused(true)}
+
+เมื่อคลิกช่อง Search จะเปิดสถานะ Focus
+
+onBlur
+onBlur={() => setIsSearchFocused(false)}
+
+เมื่อออกจากช่อง Search จะปิดสถานะ Focus
+
+24. กล่องผลการค้นหา
+{isSearchFocused && keyword && (
+  <div
+    id="article-search-results"
+    className="article-search-results"
+    role="listbox"
+  >
+
+กล่องนี้จะแสดงเมื่อ
+
+ผู้ใช้กำลัง Focus ที่ช่อง Search
+มี keyword สำหรับค้นหาแล้ว
+ถ้ากำลังค้นหา
+{isLoading && <p>Searching...</p>}
+
+จะแสดงคำว่า
+
+Searching...
+ถ้าไม่เจอบทความ
+{!isLoading && posts.length === 0 && <p>No articles found.</p>}
+
+ถ้าโหลดเสร็จแล้ว แต่ไม่มีข้อมูล จะแสดง
+
+No articles found.
+ถ้าเจอบทความ
+{!isLoading &&
+  posts.map((post) => (
+    <Link
+      key={post.id}
+      to={`/post/${post.id}`}
+      role="option"
+      onMouseDown={(event) => event.preventDefault()}
+    >
+      {post.title}
+    </Link>
+  ))}
+
+ใช้ map() วนแสดงชื่อบทความที่ค้นเจอ
+
+แต่ละอันเป็น Link
+
+ถ้ากด จะไปหน้ารายละเอียดบทความ
+
+เช่น
+
+/post/3
+25. Dropdown เลือก Category
+<Select
+  value={selectedCategory}
+  onValueChange={handleCategoryChange}
+>
+
+Dropdown นี้ใช้เลือกหมวดหมู่เหมือนกับปุ่มด้านบน
+
+ค่าที่เลือกอยู่คือ
+
+selectedCategory
+
+เมื่อเลือกค่าใหม่ จะเรียก
+
+handleCategoryChange
+26. แสดงรายการบทความ
+<div
+  className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2"
+  aria-live="polite"
+>
+
+ตรงนี้เป็นกล่องที่ใช้แสดงบทความเป็น Grid
+
+บนจอเล็กใช้ 1 คอลัมน์
+
+grid-cols-1
+
+บนจอกลางขึ้นไปใช้ 2 คอลัมน์
+
+md:grid-cols-2
+27. วนแสดง BlogCard
+{posts.map((post) => (
+  <BlogCard key={post.id} {...post} />
+))}
+
+ตรงนี้ใช้ map() วนข้อมูลใน posts
+
+ถ้ามีบทความ 6 อัน ก็จะสร้าง BlogCard 6 ใบ
+
+{...post} คืออะไร
+<BlogCard key={post.id} {...post} />
+
+คือการส่งข้อมูลทั้งหมดของ post ไปให้ BlogCard
+
+เช่นถ้า post มีข้อมูลแบบนี้
+
+{
+  id: 1,
+  title: "My Article",
+  image: "image.jpg",
+  description: "Hello"
+}
+
+การเขียน
+
+<BlogCard {...post} />
+
+ก็เหมือนส่งแบบนี้
+
+<BlogCard
+  id={post.id}
+  title={post.title}
+  image={post.image}
+  description={post.description}
+/>
+28. ข้อความเมื่อไม่มีข้อมูล
+{!isLoading && !error && posts.length === 0 && (
+  <p className="article-empty">ไม่มีข้อมูลหรือเนื้อหาที่ค้นหา</p>
+)}
+
+ข้อความนี้จะแสดงเมื่อ
+
+ไม่ได้กำลังโหลด
+ไม่มี Error
+ไม่มีบทความใน posts
+29. แสดง Error
+{error && (
+  <p className="article-status article-error" role="alert">
+    {error}
+  </p>
+)}
+
+ถ้า error มีข้อความ จะแสดง Error บนหน้าเว็บ
+
+เช่น
+
+Unable to load articles. Please try again.
+30. ปุ่ม View more
+{hasMore && !error && (
+  <div className="article-view-more">
+    <button type="button" onClick={handleLoadMore} disabled={isLoading}>
+      {isLoading ? "Loading..." : "View more"}
+    </button>
+  </div>
+)}
+
+ปุ่มนี้จะแสดงเมื่อ
+
+ยังมีหน้าถัดไป
+ไม่มี Error
+เมื่อกดปุ่ม
+onClick={handleLoadMore}
+
+จะเรียกฟังก์ชัน handleLoadMore
+
+แล้วเพิ่ม page ขึ้น 1
+
+จากนั้น API จะโหลดบทความชุดถัดไป
+
+ปิดปุ่มตอนโหลด
+disabled={isLoading}
+
+ถ้ากำลังโหลดอยู่ จะกดซ้ำไม่ได้
+
+เปลี่ยนข้อความปุ่ม
+{isLoading ? "Loading..." : "View more"}
+
+ถ้ากำลังโหลด แสดง
+
+Loading...
+
+ถ้าไม่ได้โหลด แสดง
+
+View more
+31. Export Component
+export default ArticleSection;
+
+ใช้ส่ง Component นี้ออกไปให้ไฟล์อื่นเรียกใช้ได้
+
+เช่น
+
+import ArticleSection from "./ArticleSection";
+สรุปลำดับการทำงานแบบง่ายที่สุด
+ตอนเปิดหน้าเว็บครั้งแรก
+ArticleSection เริ่มทำงาน
+State เริ่มต้นถูกสร้าง
+selectedCategory เป็น "Highlight"
+page เป็น 1
+useEffect ตัวดึง API ทำงาน
+Axios ไปขอบทความจาก API
+ได้ข้อมูลกลับมา
+เอาข้อมูลใส่ posts
+ใช้ posts.map() แสดง BlogCard
+ตอนผู้ใช้ค้นหา
+ผู้ใช้พิมพ์ในช่อง Search
+ค่า searchTerm เปลี่ยน
+Debounce รอ 350ms
+ถ้าหยุดพิมพ์แล้ว เอาค่าไปใส่ keyword
+เมื่อ keyword เปลี่ยน API จะถูกเรียกใหม่
+ได้ผลค้นหากลับมา
+แสดงบทความที่ค้นเจอ
+ตอนผู้ใช้เปลี่ยนหมวดหมู่
+ผู้ใช้กดหมวดใหม่
+เรียก handleCategoryChange
+ล้าง posts
+ตั้ง page กลับเป็น 1
+เปลี่ยน selectedCategory
+API โหลดบทความหมวดใหม่
+แสดงบทความใหม่
+ตอนผู้ใช้กด View more
+ผู้ใช้กดปุ่ม View more
+เรียก handleLoadMore
+เพิ่ม page ขึ้น 1
+API โหลดบทความหน้าถัดไป
+เอาบทความใหม่มาต่อท้ายบทความเดิม
+แสดงบทความเพิ่มบนหน้าเว็บ
+ประโยคสั้น ๆ สำหรับพูดหน้าชั้นเรียน
+
+Component ArticleSection ทำหน้าที่แสดงรายการบทความ โดยใช้ useState เก็บข้อมูลต่าง ๆ เช่น หมวดหมู่ที่เลือก รายการบทความ หน้าปัจจุบัน คำค้นหา สถานะ Loading และ Error
+
+จากนั้นใช้ useEffect ดึงข้อมูลจาก API ผ่าน axios เมื่อมีการเปลี่ยนหน้า เปลี่ยนหมวดหมู่ หรือค้นหาคำใหม่
+
+ส่วนการค้นหามีการใช้ Debounce เพื่อรอให้ผู้ใช้หยุดพิมพ์ก่อนค่อยยิง API ช่วยลดการเรียก API บ่อยเกินไป
+
+เมื่อได้ข้อมูลบทความกลับมา จะเก็บไว้ใน posts แล้วใช้ posts.map() แสดงผลเป็น BlogCard แต่ละใบ
+
+สรุปสั้นที่สุดคือ ไฟล์นี้คือ Component สำหรับ “โหลด ค้นหา กรอง และแสดงบทความ” บนหน้าเว็บครับ
