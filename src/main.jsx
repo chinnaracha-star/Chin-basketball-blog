@@ -6,19 +6,18 @@ import "./index.css";
 import App from "./App.jsx";
 import { AdminArticlesProvider } from "./context/AdminArticlesProvider.jsx";
 import { AdminCategoriesProvider } from "./context/AdminCategoriesProvider.jsx";
+import { AuthProvider } from "./context/AuthProvider.jsx";
 
-// --- Entry point: นำ React application ไปแสดงผลใน element ที่มี id="root" ---
 createRoot(document.getElementById("root")).render(
-  // StrictMode ช่วยตรวจจับรูปแบบการเขียน React ที่อาจก่อให้เกิดปัญหาระหว่างพัฒนา
   <StrictMode>
-    {/* BrowserRouter ทำให้ทุก component สามารถใช้งาน routing ได้ */}
     <BrowserRouter>
-      <AdminArticlesProvider>
-        <AdminCategoriesProvider>
-          <App />
-        </AdminCategoriesProvider>
-      </AdminArticlesProvider>
-      {/* Toaster ใช้แสดงข้อความแจ้งเตือน เช่น คัดลอกลิงก์หรือเข้าสู่ระบบสำเร็จ */}
+      <AuthProvider>
+        <AdminArticlesProvider>
+          <AdminCategoriesProvider>
+            <App />
+          </AdminCategoriesProvider>
+        </AdminArticlesProvider>
+      </AuthProvider>
       <Toaster position="top-center" richColors />
     </BrowserRouter>
   </StrictMode>,

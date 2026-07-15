@@ -7,7 +7,8 @@ import {
   LogOut,
   User,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const sidebarLinks = [
   { to: "/admin", label: "Article management", icon: FileText },
@@ -18,6 +19,14 @@ const sidebarLinks = [
 ];
 
 export function MemberLayout({ title, actions, children }) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <main className="member-shell">
       <aside className="member-sidebar" aria-label="Member management">
@@ -49,7 +58,11 @@ export function MemberLayout({ title, actions, children }) {
             <ExternalLink aria-hidden="true" />
             <span>hh. website</span>
           </NavLink>
-          <button type="button" className="member-sidebar-link">
+          <button
+            type="button"
+            className="member-sidebar-link"
+            onClick={handleLogout}
+          >
             <LogOut aria-hidden="true" />
             <span>Log out</span>
           </button>

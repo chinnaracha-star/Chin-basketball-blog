@@ -161,7 +161,8 @@ Route ที่ควรมีหรือควรตรวจสอบ
 7. เปิด src/components/ui/select.jsx เพื่อดู dropdown/filter
 
 สรุปสั้น
-Part 2.3 คือการทำ Admin Part ให้ใช้งานได้ครบขึ้น โดยเน้น navigation, article management, create draft/publish, edit และ delete พร้อม confirm ก่อนลบ
+Part 2.3 คือการทำ Admin Part ให้ใช้งานได้ครบขึ้น โดยเน้น navigation, article management, create draft/publish, edit 
+และ delete พร้อม confirm ก่อนลบ
 
 Requirement #7: ดูรายการหมวดหมู่ ค้นหา แก้ไข และลบ
 ผู้ใช้งานต้องสามารถดูรายการหมวดหมู่ทั้งหมดในหน้า Category management และค้นหาหมวดหมู่ได้
@@ -265,5 +266,10 @@ Route ที่เพิ่มสำหรับ Category management
 4. เปิด src/pages/CategoryFormPage.jsx เพื่อดู create/edit form และ validation
 5. เปิด src/pages/AdminPanelPage.jsx และ src/pages/CreateArticlePage.jsx เพื่อดูการนำ categories ไปใช้ใน filter/dropdown
 
+
+สรุปสั้น
+Part 2.3 คือการทำ Admin Part ให้ใช้งานได้ครบขึ้น โดยเน้น navigation, article management, create draft/publish, edit 
+และ delete พร้อม confirm ก่อนลบ
 สรุปเพิ่มเติม
-Requirement #7-#12 ทำให้ Admin Part ครบขึ้นจากแค่จัดการบทความ ไปสู่การจัดการหมวดหมู่ โปรไฟล์ notification และ reset password พร้อม flow แบบ mock UI ที่พร้อมต่อ backend ภายหลัง
+Requirement #7-#12 ทำให้ Admin Part ครบขึ้นจากแค่จัดการบทความ ไปสู่การจัดการหมวดหมู่ 
+โปรไฟล์ notification และ reset password พร้อม flow แบบ mock UI ที่พร้อมต่อ backend ภายหลัง

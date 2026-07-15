@@ -842,6 +842,7 @@ body {
 
 .nav-icon-button,
 .nav-user-button,
+.nav-login-link,
 .nav-signup-link {
   min-height: 36px;
   display: inline-flex;
@@ -908,6 +909,13 @@ body {
   background: #262321;
   padding: 0 16px;
   color: #fff;
+}
+
+.nav-login-link {
+  border: 1px solid #d8d2c9;
+  background: #fff;
+  padding: 0 16px;
+  color: #302c29;
 }
 
 .nav-dropdown {
@@ -1579,6 +1587,7 @@ body {
   }
 
   .nav-user-name,
+  .nav-login-link,
   .nav-signup-link {
     display: none;
   }
