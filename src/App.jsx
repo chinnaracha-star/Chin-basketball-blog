@@ -5,6 +5,7 @@ import AdminPanelPage from "./pages/AdminPanelPage";
 import CategoryManagementPage from "./pages/CategoryManagementPage";
 import CategoryFormPage from "./pages/CategoryFormPage";
 import CreateArticlePage from "./pages/CreateArticlePage";
+import HealthTestPage from "./pages/HealthTestPage";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import NotificationPage from "./pages/NotificationPage";
@@ -28,6 +29,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/test-health" element={<HealthTestPage />} />
       <Route path="/post/:postId" element={<PostPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
