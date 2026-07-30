@@ -66,24 +66,47 @@ function getPositiveInteger(value, fallback) {
   return number;
 }
 
-function isMissingPostData(post) {
-  return (
-    !post.title ||
-    !post.image ||
-    !post.category_id ||
-    !post.description ||
-    !post.content ||
-    !post.status_id
-  );
+const postValidationRules = [
+  { field: "title", label: "Title", type: "string" },
+  { field: "image", label: "Image", type: "string" },
+  { field: "category_id", label: "Category id", type: "number" },
+  { field: "description", label: "Description", type: "string" },
+  { field: "content", label: "Content", type: "string" },
+  { field: "status_id", label: "Status id", type: "number" },
+];
+
+function getPostValidationError(post) {
+  for (const rule of postValidationRules) {
+    const value = post?.[rule.field];
+
+    if (value === undefined || value === null || value === "") {
+      return `${rule.label} is required`;
+    }
+
+    if (rule.type === "number") {
+      if (typeof value !== "number" || Number.isNaN(value)) {
+        return `${rule.label} must be a number`;
+      }
+
+      continue;
+    }
+
+    if (typeof value !== rule.type) {
+      return `${rule.label} must be a ${rule.type}`;
+    }
+  }
+
+  return null;
 }
 
 const createPost = async (req, res) => {
   const { title, image, category_id, description, content, status_id } = req.body;
 
-  if (isMissingPostData(req.body)) {
+  const validationError = getPostValidationError(req.body);
+
+  if (validationError) {
     return res.status(400).json({
-      message:
-        "Server could not create post because there are missing data from client",
+      message: validationError,
     });
   }
 
@@ -213,10 +236,11 @@ app.get("/posts/:postId", async (req, res) => {
 app.put("/posts/:postId", async (req, res) => {
   const { title, image, category_id, description, content, status_id } = req.body;
 
-  if (isMissingPostData(req.body)) {
+  const validationError = getPostValidationError(req.body);
+
+  if (validationError) {
     return res.status(400).json({
-      message:
-        "Server could not update post because there are missing data from client",
+      message: validationError,
     });
   }
 
