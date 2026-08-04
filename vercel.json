@@ -1,11 +1,14 @@
 {
-  "routes": [
-    { "src": "/health", "dest": "/api/index.js" },
-    { "src": "/profiles", "dest": "/api/index.js" },
-    { "src": "/assignments", "dest": "/api/index.js" },
-    { "src": "/posts", "dest": "/api/index.js" },
-    { "src": "/posts/(.*)", "dest": "/api/index.js" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/" }
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    { "source": "/health", "destination": "/api/index.js" },
+    { "source": "/profiles/:path*", "destination": "/api/index.js" },
+    { "source": "/assignments/:path*", "destination": "/api/index.js" },
+    { "source": "/posts/:path*", "destination": "/api/index.js" },
+    { "source": "/auth/:path*", "destination": "/api/index.js" },
+    { "source": "/protected-route", "destination": "/api/index.js" },
+    { "source": "/admin-only", "destination": "/api/index.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

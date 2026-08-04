@@ -1,42 +1,8 @@
-import "dotenv/config";
-import cors from "cors";
-import express from "express";
-import assignmentsRouter from "./routes/assignments.mjs";
-import healthRouter from "./routes/health.mjs";
-import postsRouter from "./routes/posts.mjs";
-import profilesRouter from "./routes/profiles.mjs";
+import { Router } from "express";
+import postValidation from "../middlewares/validatePost.mjs";
+import db from "../utils/db.mjs";
 
-const app = express();
-const PORT = process.env.PORT || 4000;
-
-app.use(express.json());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      process.env.FRONTEND_URL,
-    ].filter(Boolean),
-  })
-);
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-app.get("/health", (req, res) => {
-  res.status(200).json({ message: "OK" });
-});
-
-app.get("/profiles", (req, res) => {
-  res.status(200).json({
-    data: {
-      name: "john",
-      age: 20,
-    },
-  });
-});
-
+const router = Router();
 const PAGE_SIZE = 6;
 
 function getPostSelectQuery() {
@@ -71,49 +37,8 @@ function getPositiveInteger(value, fallback) {
   return number;
 }
 
-const postValidationRules = [
-  { field: "title", label: "Title", type: "string" },
-  { field: "image", label: "Image", type: "string" },
-  { field: "category_id", label: "Category id", type: "number" },
-  { field: "description", label: "Description", type: "string" },
-  { field: "content", label: "Content", type: "string" },
-  { field: "status_id", label: "Status id", type: "number" },
-];
-
-function getPostValidationError(post) {
-  for (const rule of postValidationRules) {
-    const value = post?.[rule.field];
-
-    if (value === undefined || value === null || value === "") {
-      return `${rule.label} is required`;
-    }
-
-    if (rule.type === "number") {
-      if (typeof value !== "number" || Number.isNaN(value)) {
-        return `${rule.label} must be a number`;
-      }
-
-      continue;
-    }
-
-    if (typeof value !== rule.type) {
-      return `${rule.label} must be a ${rule.type}`;
-    }
-  }
-
-  return null;
-}
-
-const createPost = async (req, res) => {
+export const createPost = async (req, res) => {
   const { title, image, category_id, description, content, status_id } = req.body;
-
-  const validationError = getPostValidationError(req.body);
-
-  if (validationError) {
-    return res.status(400).json({
-      message: validationError,
-    });
-  }
 
   try {
     await db.query(
@@ -136,10 +61,9 @@ const createPost = async (req, res) => {
   }
 };
 
-app.post("/assignments", createPost);
-app.post("/posts", createPost);
+router.post("/", postValidation, createPost);
 
-app.get("/posts", async (req, res) => {
+router.get("/", async (req, res) => {
   const page = getPositiveInteger(req.query.page, 1);
   const limit = getPositiveInteger(req.query.limit, PAGE_SIZE);
   const offset = (page - 1) * limit;
@@ -212,7 +136,7 @@ app.get("/posts", async (req, res) => {
   }
 });
 
-app.get("/posts/:postId", async (req, res) => {
+router.get("/:postId", async (req, res) => {
   try {
     const result = await db.query(
       `
@@ -238,16 +162,8 @@ app.get("/posts/:postId", async (req, res) => {
   }
 });
 
-app.put("/posts/:postId", async (req, res) => {
+router.put("/:postId", postValidation, async (req, res) => {
   const { title, image, category_id, description, content, status_id } = req.body;
-
-  const validationError = getPostValidationError(req.body);
-
-  if (validationError) {
-    return res.status(400).json({
-      message: validationError,
-    });
-  }
 
   try {
     const result = await db.query(
@@ -292,7 +208,7 @@ app.put("/posts/:postId", async (req, res) => {
   }
 });
 
-app.delete("/posts/:postId", async (req, res) => {
+router.delete("/:postId", async (req, res) => {
   try {
     const result = await db.query(
       `
@@ -320,22 +236,5 @@ app.delete("/posts/:postId", async (req, res) => {
     });
   }
 });
-=======
-=======
->>>>>>> Stashed changes
-app.use("/health", healthRouter);
-app.use("/profiles", profilesRouter);
-app.use("/assignments", assignmentsRouter);
-app.use("/posts", postsRouter);
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
-if (process.argv[1]?.endsWith("app.mjs")) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-export default app;
+export default router;

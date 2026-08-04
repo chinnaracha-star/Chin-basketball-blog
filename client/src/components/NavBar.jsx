@@ -14,7 +14,7 @@ import { useAuth } from "../hooks/useAuth";
 export function NavBar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const navigate = useNavigate();
   const unreadCount = mockNotifications.filter(
     (notification) => notification.unread,
@@ -94,9 +94,11 @@ export function NavBar() {
                   }}
                 >
                   <span className="nav-avatar" aria-hidden="true">
-                    {mockMember.name.charAt(0)}
+                    {(user?.name || mockMember.name).charAt(0)}
                   </span>
-                  <span className="nav-user-name">{mockMember.name}</span>
+                  <span className="nav-user-name">
+                    {user?.name || mockMember.name}
+                  </span>
                   <ChevronDown aria-hidden="true" />
                 </button>
 

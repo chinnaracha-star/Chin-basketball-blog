@@ -1,0 +1,121 @@
+Note: การแยก Project เป็น Client และ Server
+===========================================
+
+1. ทำไมต้องแยก
+
+โปรเจกต์นี้เป็น Full Stack Application ซึ่งมีโค้ดสองฝั่ง:
+- Client คือหน้าเว็บที่ทำด้วย React
+- Server คือ API ที่ทำด้วย Express และติดต่อฐานข้อมูล/Supabase
+
+การแยกโฟลเดอร์ช่วยให้รู้ว่าโค้ดใดทำงานใน Browser และโค้ดใดทำงานใน Server
+รวมถึงช่วยป้องกันไม่ให้นำ secret ของฐานข้อมูลไปใช้หรือ build รวมกับ Frontend โดยไม่ตั้งใจ
+
+
+2. โครงสร้างใหม่
+
+client/
+- src/ เก็บ React components, pages, context, hooks และ services
+- public/ เก็บไฟล์ static
+- package.json เก็บ package ที่ Frontend ใช้
+- .env เก็บเฉพาะตัวแปรที่ขึ้นต้นด้วย VITE_
+
+server/
+- app.mjs เป็นจุดเริ่มต้นของ Express
+- routes/ เก็บ API routes
+- middlewares/ เก็บ middleware
+- utils/ เก็บ database และ Supabase client
+- database/ เก็บ SQL
+- api/ เก็บ adapter สำหรับ Vercel เมื่อ deploy Server แยก
+- package.json เก็บ package ที่ Backend ใช้
+- .env เก็บ connection string และ Supabase configuration
+
+โฟลเดอร์หลัก
+- package.json ควบคุม npm workspaces และเป็นคำสั่งลัด
+- package-lock.json ล็อก version ของทั้ง Client และ Server
+- api/index.js เป็น adapter สำหรับ deploy ทั้งโปรเจกต์บน Vercel
+- README.md อธิบายวิธีติดตั้งและรัน
+
+
+3. Environment Variables
+
+client/.env
+
+VITE_API_BASE_URL=http://localhost:4000
+
+ตัวแปร VITE_ จะถูกนำเข้า Frontend bundle จึงห้ามเก็บ password หรือ secret ในไฟล์นี้
+
+server/.env
+
+PORT=4000
+CONNECTION_STRING=postgresql://...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=...
+FRONTEND_URL=http://localhost:5173
+
+CONNECTION_STRING และ Supabase configuration อยู่ฝั่ง Server เท่านั้น
+
+
+4. วิธีติดตั้ง
+
+เปิด Terminal ที่โฟลเดอร์ Chin-basketball-blog แล้วรัน:
+
+npm install
+
+Root package.json ใช้ npm workspaces ดังนั้นคำสั่งเดียวจะติดตั้ง package ของทั้งสองฝั่ง
+
+
+5. วิธีเปิดโปรเจกต์
+
+Terminal 1 เปิด Backend:
+
+npm run start
+
+หรือระหว่างพัฒนาใช้:
+
+npm run dev:server
+
+Terminal 2 เปิด Frontend:
+
+npm run dev
+
+จากนั้นเปิด:
+
+http://localhost:5173
+
+
+6. คำสั่งจากโฟลเดอร์หลักทำงานอย่างไร
+
+npm run start
+ส่งต่อไปทำ npm run start ใน server/
+
+npm run dev:server
+ส่งต่อไปทำ npm run dev ใน server/ และใช้ nodemon
+
+npm run dev
+ส่งต่อไปทำ npm run dev ใน client/ และใช้ Vite
+
+npm run lint
+ตรวจโค้ดใน client/
+
+npm run build
+build Frontend และสร้างผลลัพธ์ใน client/dist/
+
+
+7. การไหลของ Request
+
+1) Browser เปิด React จาก http://localhost:5173
+2) React อ่าน VITE_API_BASE_URL
+3) React เรียก API เช่น http://localhost:4000/posts
+4) Express ใน server/app.mjs รับ request
+5) Express ส่งต่อให้ server/routes/posts.mjs
+6) Route ติดต่อ PostgreSQL ผ่าน server/utils/db.mjs
+7) Express ส่ง JSON response กลับไปให้ React
+
+
+8. สิ่งสำคัญที่ต้องจำ
+
+- เปิด Client และ Server พร้อมกันคนละ Terminal
+- ห้ามนำ CONNECTION_STRING ไปไว้ใน client/.env
+- หลังแก้ client/.env ต้อง restart Vite
+- หลังแก้ server/.env ต้อง restart Express
+- รัน npm install ที่ root ได้ ไม่จำเป็นต้องติดตั้งซ้ำในทั้งสองโฟลเดอร์

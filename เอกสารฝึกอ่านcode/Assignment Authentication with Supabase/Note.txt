@@ -1,0 +1,304 @@
+Assignment: Authentication with Supabase
+========================================
+
+1. Assignment นี้ทำอะไร
+
+Assignment นี้เปลี่ยนระบบสมาชิกของ Personal Blog จากระบบจำลอง (Mock)
+ให้เป็นระบบ Authentication จริง โดยใช้บริการ Supabase Auth ดูแล email และ password
+ส่วนข้อมูลเพิ่มเติมของสมาชิก เช่น username, name, รูปโปรไฟล์ และ role
+จะเก็บในตาราง users ของ PostgreSQL
+
+หลังทำ Assignment นี้ ผู้ใช้จะสามารถ:
+- สมัครสมาชิก
+- เข้าสู่ระบบด้วย email และ password
+- เปิดหน้าที่อนุญาตเฉพาะผู้ที่ล็อกอินแล้ว
+- ดึงข้อมูลสมาชิกที่กำลังล็อกอิน
+- เปลี่ยนรหัสผ่าน โดยต้องยืนยันรหัสผ่านเดิม
+- ออกจากระบบ
+
+ระบบยังสามารถแยกสิทธิ์ user กับ admin ได้ด้วย field role
+
+
+2. เครื่องมือแต่ละส่วนรับผิดชอบอะไร
+
+Supabase Auth
+- เก็บบัญชี email และ password
+- ตรวจสอบข้อมูลตอน login
+- ออก access token หลัง login สำเร็จ
+- ตรวจว่า token เป็นของผู้ใช้จริงและหมดอายุหรือยัง
+- เปลี่ยน password
+
+PostgreSQL ตาราง users
+- ใช้ Supabase user id เป็น Primary Key
+- เก็บ username
+- เก็บ name
+- เก็บ profile_pic
+- เก็บ role ว่าเป็น user หรือ admin
+
+Express.js Backend
+- รับ request จาก React
+- ติดต่อ Supabase Auth
+- อ่านและเขียนข้อมูลใน PostgreSQL
+- ตรวจ access token ด้วย middleware
+- ส่ง response และ status code กลับไป
+
+React Frontend
+- รับข้อมูลจากฟอร์ม
+- เรียก Authentication API
+- เก็บ access token ใน localStorage
+- ส่ง token ไปกับ Authorization header
+- แสดงหรือซ่อนหน้าตามสถานะการ login
+
+
+3. ไฟล์สำคัญที่เพิ่มหรือแก้ไข
+
+Backend
+- server/routes/auth.mjs
+  เก็บ API register, login, get-user และ reset-password
+
+- server/utils/supabase.mjs
+  สร้าง Supabase client และมี function อ่าน Bearer token
+
+- server/utils/db.mjs
+  สร้าง PostgreSQL connection pool จาก CONNECTION_STRING
+
+- server/middlewares/protectUser.mjs
+  อนุญาตเฉพาะ request ที่มี token ของผู้ใช้จริง
+
+- server/middlewares/protectAdmin.mjs
+  ตรวจ token และอ่าน role จากตาราง users
+  อนุญาตให้ผ่านต่อเมื่อ role เป็น admin เท่านั้น
+
+- server/database/auth.sql
+  SQL สำหรับสร้างตาราง users
+
+- server/app.mjs
+  mount authRouter ที่ /auth และมี route ตัวอย่างสำหรับทดสอบ middleware
+
+Frontend
+- client/src/services/authApi.js
+  รวม function ที่ใช้เรียก Authentication API และจัดการ access token
+
+- client/src/context/AuthProvider.jsx
+  เก็บ user และสถานะ login ไว้เป็นส่วนกลางของแอป
+
+- client/src/components/ProtectedRoute.jsx
+  ป้องกันหน้าสมาชิก หากยังไม่ login จะส่งไปหน้า /login
+
+- client/src/pages/LoginPage.jsx
+  เรียก POST /auth/login แทนการตรวจ mock account
+
+- client/src/pages/SignupPage.jsx
+  เรียก POST /auth/register แทนการจำลองว่าสมัครสำเร็จ
+
+- client/src/pages/ResetPasswordPage.jsx
+  เรียก PUT /auth/reset-password เพื่อเปลี่ยน password จริง
+
+
+4. การตั้งค่า Supabase ก่อนทดสอบ
+
+1) เข้า Supabase Dashboard และสร้าง Project
+
+2) ไปที่ Project Settings > API แล้วคัดลอก:
+- Project URL
+- anon public key
+
+3) เพิ่มค่าต่อไปนี้ในไฟล์ server/.env
+
+SUPABASE_URL=https://your-project-url.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+
+ห้ามนำ service_role key มาใส่ใน Frontend หรือเผยแพร่บน GitHub
+Assignment นี้ใช้ anon public key ที่ Backend เท่านั้น
+
+4) ตรวจ CONNECTION_STRING ใน server/.env ให้เป็น PostgreSQL connection string ของ Project
+
+5) เปิด SQL Editor ใน Supabase แล้วรันเนื้อหาจากไฟล์ server/database/auth.sql
+
+6) ไปที่ Authentication > Providers > Email
+แล้วปิด Confirm email ตามเงื่อนไขของ Assignment
+
+ถ้าไม่ปิด Confirm email ผู้ใช้ใหม่อาจยัง login ไม่ได้จนกว่าจะยืนยัน email
+
+7) ตั้ง VITE_API_BASE_URL ใน client/.env ให้ชี้ไป Backend เช่น
+
+VITE_API_BASE_URL=http://localhost:4000
+
+ดูรายการตัวแปรตัวอย่างได้ใน client/.env.example และ server/.env.example
+
+
+5. ตาราง users
+
+คำสั่งอยู่ใน server/database/auth.sql:
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  profile_pic TEXT,
+  role VARCHAR(10) CHECK (role IN ('user', 'admin')) NOT NULL
+);
+
+ความหมายของแต่ละ column:
+- id คือ id เดียวกับผู้ใช้ใน Supabase Auth
+- username ห้ามซ้ำและห้ามว่าง
+- name ห้ามว่าง
+- profile_pic เก็บ URL รูปและว่างได้
+- role รับได้เฉพาะ user หรือ admin
+
+
+6. API ที่สร้างขึ้น
+
+POST /auth/register
+
+Body ตัวอย่าง:
+{
+  "email": "member@example.com",
+  "password": "password123",
+  "username": "member",
+  "name": "NBA Member"
+}
+
+ลำดับการทำงาน:
+1) ตรวจว่ากรอกข้อมูลครบ
+2) query ตาราง users เพื่อตรวจ username ซ้ำ
+3) เรียก supabase.auth.signUp() เพื่อสร้างบัญชี
+4) นำ id จาก Supabase มา INSERT ลง users
+5) กำหนด role เริ่มต้นเป็น user
+6) ตอบ 201 Created
+
+
+POST /auth/login
+
+Body ตัวอย่าง:
+{
+  "email": "member@example.com",
+  "password": "password123"
+}
+
+เมื่อข้อมูลถูกต้อง Supabase จะสร้าง session และ Backend จะส่ง access_token กลับไป
+Frontend เก็บ token นี้ใน localStorage
+
+
+GET /auth/get-user
+
+ต้องส่ง Header:
+Authorization: Bearer ACCESS_TOKEN
+
+Backend จะ:
+1) ส่ง token ให้ Supabase ตรวจสอบ
+2) นำ user id ไปค้นข้อมูลในตาราง users
+3) รวม email จาก Supabase กับ profile จาก users
+4) ส่งข้อมูล user กลับไป
+
+
+PUT /auth/reset-password
+
+ต้องส่ง Header:
+Authorization: Bearer ACCESS_TOKEN
+
+Body ตัวอย่าง:
+{
+  "oldPassword": "password123",
+  "newPassword": "newPassword456"
+}
+
+Backend จะตรวจ token ตรวจ password เดิม และเปลี่ยนเป็น password ใหม่ใน Supabase
+
+
+7. Middleware ทำงานอย่างไร
+
+protectUser
+1) อ่าน Authorization header
+2) ตรวจว่ารูปแบบเป็น Bearer token
+3) เรียก supabase.auth.getUser(token)
+4) ถ้า token ถูกต้อง จะเก็บข้อมูลไว้ใน req.user
+5) เรียก next() เพื่อไปยัง route handler
+
+ตัวอย่างทดสอบ:
+GET /protected-route
+
+
+protectAdmin
+1) ตรวจ token เหมือน protectUser
+2) query role จากตาราง users
+3) ถ้า role ไม่ใช่ admin ตอบ 403 Forbidden
+4) ถ้าเป็น admin จึงเรียก next()
+
+ตัวอย่างทดสอบ:
+GET /admin-only
+
+
+8. Flow การ Login จาก React ถึง Backend
+
+1) ผู้ใช้กรอก email และ password ที่หน้า Login
+2) LoginPage เรียก login() จาก AuthProvider
+3) AuthProvider เรียก POST /auth/login ผ่าน authApi.js
+4) Express ส่ง email และ password ไปตรวจที่ Supabase
+5) Supabase ส่ง access token กลับมา
+6) Frontend บันทึก token ใน localStorage
+7) Frontend เรียก GET /auth/get-user พร้อม Bearer token
+8) Backend ส่งข้อมูลสมาชิกกลับมา
+9) AuthProvider เก็บ user และ isLoggedIn จะเป็น true
+10) ProtectedRoute จึงอนุญาตให้เปิดหน้าสมาชิก
+
+เมื่อ refresh หน้าเว็บ AuthProvider จะอ่าน token เดิมและเรียก get-user ใหม่
+ถ้า token หมดอายุหรือไม่ถูกต้อง ระบบจะลบ token และถือว่า logout
+
+
+9. HTTP Status Code ที่ควรรู้
+
+- 200 OK: login, get-user หรือ reset password สำเร็จ
+- 201 Created: สมัครสมาชิกสำเร็จ
+- 400 Bad Request: ข้อมูลไม่ครบ, username ซ้ำ, password ผิด หรือ login ไม่สำเร็จ
+- 401 Unauthorized: ไม่มี token, token ผิด หรือ token หมดอายุ
+- 403 Forbidden: login แล้ว แต่ไม่มีสิทธิ์ admin
+- 404 Not Found: ไม่พบ profile หรือ role ในตาราง users
+- 500 Internal Server Error: Backend, config หรือ database มีปัญหา
+
+
+10. วิธีรันและทดสอบ
+
+ติดตั้ง package:
+npm install
+
+เปิด Backend:
+npm start
+
+เปิด Frontend ใน terminal อีกหน้าต่าง:
+npm run dev
+
+ลำดับแนะนำในการทดสอบ:
+1) เปิด /signup และสมัคร account ใหม่
+2) ตรวจ Authentication > Users ใน Supabase ว่ามี email
+3) ตรวจ Table Editor > users ว่ามี profile id เดียวกัน
+4) เปิด /login และเข้าสู่ระบบ
+5) เปิด /member/profile เพื่อตรวจว่า ProtectedRoute ยอมให้เข้า
+6) เปิด /member/reset-password แล้วเปลี่ยน password
+7) logout แล้ว login ด้วย password ใหม่
+8) เรียก GET /protected-route พร้อม token
+9) เรียก GET /admin-only เพื่อดูผลการตรวจ role
+
+
+11. การเปลี่ยน user ให้เป็น admin เพื่อทดสอบ
+
+Account ที่สมัครใหม่จะมี role เป็น user เสมอ
+ถ้าต้องการทดสอบ admin ให้รัน SQL โดยเปลี่ยน username ให้ตรงกับ account ที่ต้องการ:
+
+UPDATE users
+SET role = 'admin'
+WHERE username = 'your_username';
+
+จากนั้น GET /admin-only จะผ่านและตอบข้อมูล admin กลับมา
+
+
+12. สรุปสั้น
+
+หัวใจของ Assignment นี้คือการแยกหน้าที่:
+- Supabase Auth ดูแลตัวตนและ password
+- PostgreSQL users ดูแลข้อมูล profile และ role
+- Express เป็นตัวกลางและตรวจสิทธิ์
+- React เก็บ token และแสดง UI ตามสถานะ login
+
+อย่าเชื่อเพียงค่า isLoggedIn จาก Frontend เพราะผู้ใช้แก้ localStorage เองได้
+Route สำคัญใน Backend ต้องตรวจ token ด้วย protectUser หรือ protectAdmin เสมอ

@@ -2,6 +2,7 @@ import { CheckCircle2, KeyRound } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MemberLayout } from "../components";
+import { changePassword, getApiError } from "../services/authApi";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,7 @@ function ResetPasswordPage() {
   const [errors, setErrors] = useState({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isChanged, setIsChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -53,10 +55,24 @@ function ResetPasswordPage() {
     if (Object.keys(nextErrors).length === 0) setIsConfirmOpen(true);
   }
 
-  function handleConfirmChange() {
-    setValues(initialValues);
-    setIsChanged(true);
-    toast.success("Password changed successfully");
+  async function handleConfirmChange(event) {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await changePassword(values.currentPassword, values.newPassword);
+      setValues(initialValues);
+      setIsChanged(true);
+      setIsConfirmOpen(false);
+      toast.success("Password changed successfully");
+    } catch (error) {
+      setErrors({
+        form: getApiError(error, "Could not change your password."),
+      });
+      setIsConfirmOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -69,8 +85,7 @@ function ResetPasswordPage() {
           <div>
             <h2>Change your password</h2>
             <p>
-              Use mock data for this assignment. The backend will handle real
-              verification later.
+              Enter your current password before choosing a new password.
             </p>
           </div>
         </div>
@@ -116,6 +131,12 @@ function ResetPasswordPage() {
           </p>
         )}
 
+        {errors.form && (
+          <p className="auth-form-error" role="alert">
+            {errors.form}
+          </p>
+        )}
+
         <div className="member-form-actions">
           <button type="submit" className="member-primary-button">
             Change password
@@ -129,8 +150,7 @@ function ResetPasswordPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm password change?</AlertDialogTitle>
             <AlertDialogDescription>
-              This mock action will reset the UI state and clear the password
-              fields.
+              Your new password will be saved to your Supabase account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="member-dialog-actions">
@@ -140,8 +160,9 @@ function ResetPasswordPage() {
             <AlertDialogAction
               className="member-primary-button"
               onClick={handleConfirmChange}
+              disabled={isSubmitting}
             >
-              Reset
+              {isSubmitting ? "Changing..." : "Reset"}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

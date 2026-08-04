@@ -1,18 +1,97 @@
-# React + Vite
+# Chin Basketball Blog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Personal Blog แบบ Full Stack แยก Frontend และ Backend ชัดเจน:
 
-Currently, two official plugins are available:
+```text
+Chin-basketball-blog/
+├── client/                 React + Vite
+│   ├── public/
+│   ├── src/
+│   ├── .env.example
+│   └── package.json
+├── server/                 Express + PostgreSQL + Supabase Auth
+│   ├── api/
+│   ├── database/
+│   ├── middlewares/
+│   ├── routes/
+│   ├── utils/
+│   ├── .env.example
+│   ├── app.mjs
+│   └── package.json
+├── api/index.js            Vercel adapter
+├── package.json            Workspace scripts
+└── vercel.json
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ติดตั้ง
 
-## React Compiler
+รันที่โฟลเดอร์หลักเพียงครั้งเดียว:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```bash
+npm install
+```
 
-Note: This will impact Vite dev & build performances.
+## Environment variables
 
-## Expanding the ESLint configuration
+สร้าง `client/.env`:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```env
+VITE_API_BASE_URL=http://localhost:4000
+```
+
+สร้าง `server/.env`:
+
+```env
+PORT=4000
+CONNECTION_STRING=postgresql://...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+FRONTEND_URL=http://localhost:5173
+```
+
+ไฟล์จริงถูก ignore โดย Git ส่วนค่าตัวอย่างอยู่ใน `.env.example` ของแต่ละฝั่ง
+
+## รันโปรเจกต์จากโฟลเดอร์หลัก
+
+Terminal 1 — Backend:
+
+```bash
+npm run start
+```
+
+ถ้าต้องการให้ Backend restart อัตโนมัติเมื่อแก้ไฟล์:
+
+```bash
+npm run dev:server
+```
+
+Terminal 2 — Frontend:
+
+```bash
+npm run dev
+```
+
+เปิดหน้าเว็บที่ `http://localhost:5173`
+
+## รันจากแต่ละโฟลเดอร์
+
+```bash
+cd server
+npm run dev
+```
+
+และอีก Terminal:
+
+```bash
+cd client
+npm run dev
+```
+
+## ตรวจโค้ด
+
+```bash
+npm run lint
+npm run build
+```
+
+หน้าทดสอบ API อยู่ที่ `http://localhost:5173/test-health`
