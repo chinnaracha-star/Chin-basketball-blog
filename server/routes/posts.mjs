@@ -1,6 +1,14 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
+import path from "node:path";
+import protectAdmin from "../middlewares/protectAdmin.mjs";
+import uploadPostImage from "../middlewares/uploadPostImage.mjs";
 import postValidation from "../middlewares/validatePost.mjs";
 import db from "../utils/db.mjs";
+import {
+  createSupabaseClient,
+  getBearerToken,
+} from "../utils/supabase.mjs";
 
 const router = Router();
 const PAGE_SIZE = 6;
@@ -61,7 +69,97 @@ export const createPost = async (req, res) => {
   }
 };
 
-router.post("/", postValidation, createPost);
+function parsePositiveInteger(value) {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : null;
+}
+
+function validateUploadedPost(post, file) {
+  if (!file) return "Thumbnail image is required";
+  if (!post.title?.trim()) return "Title is required";
+  if (!parsePositiveInteger(post.category_id)) {
+    return "Category ID must be a positive integer";
+  }
+  if (!post.description?.trim()) return "Description is required";
+  if (!post.content?.trim()) return "Content is required";
+  if (!parsePositiveInteger(post.status_id)) {
+    return "Status ID must be a positive integer";
+  }
+  return null;
+}
+
+async function createPostWithImage(req, res) {
+  const newPost = req.body;
+  const file = req.files?.imageFile?.[0];
+  const validationError = validateUploadedPost(newPost, file);
+
+  if (validationError) {
+    return res.status(400).json({ message: validationError });
+  }
+
+  const bucketName =
+    process.env.SUPABASE_STORAGE_BUCKET || "my-personal-blog";
+  const extension = path.extname(file.originalname).toLowerCase();
+  const filePath = `posts/${Date.now()}_${randomUUID()}${extension}`;
+  const supabase = createSupabaseClient(getBearerToken(req));
+  let uploadedPath = null;
+
+  try {
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (error) throw error;
+    uploadedPath = data.path;
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(uploadedPath);
+
+    const categoryId = parsePositiveInteger(newPost.category_id);
+    const statusId = parsePositiveInteger(newPost.status_id);
+    const { rows } = await db.query(
+      `INSERT INTO posts
+        (title, image, category_id, description, content, status_id)
+       VALUES
+        ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [
+        newPost.title.trim(),
+        publicUrl,
+        categoryId,
+        newPost.description.trim(),
+        newPost.content.trim(),
+        statusId,
+      ],
+    );
+
+    return res.status(201).json({
+      message: "Created post successfully",
+      post: rows[0],
+    });
+  } catch (error) {
+    if (uploadedPath) {
+      const { error: cleanupError } = await supabase.storage
+        .from(bucketName)
+        .remove([uploadedPath]);
+      if (cleanupError) {
+        console.error("Could not remove orphaned image:", cleanupError.message);
+      }
+    }
+
+    console.error("Create post with image error:", error.message);
+    return res.status(500).json({
+      message: "Server could not create post",
+      error: error.message,
+    });
+  }
+}
+
+router.post("/", protectAdmin, uploadPostImage, createPostWithImage);
 
 router.get("/", async (req, res) => {
   const page = getPositiveInteger(req.query.page, 1);

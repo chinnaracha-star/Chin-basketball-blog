@@ -60,7 +60,7 @@ function LoginPage() {
       <NavBar />
       <section className="auth-page">
         <div className="auth-card auth-card-login">
-          <h1>อยากเข้าก็ใส่ให้ถูก นึกดีๆก่อนพิมพ์</h1>
+          <h1>Sign in</h1>
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="auth-field">
               <label htmlFor="login-email">Email</label>
@@ -93,7 +93,11 @@ function LoginPage() {
                 {errors.form}
               </p>
             )}
-            <button className="auth-submit" type="submit" disabled={isSubmitting}>
+            <button
+              className="auth-submit"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Logging in..." : "Log in"}
             </button>
           </form>

@@ -19,6 +19,7 @@ export function NavBar() {
   const unreadCount = mockNotifications.filter(
     (notification) => notification.unread,
   ).length;
+  const profileImage = user?.profilePic || user?.avatar;
 
   function handleLogout() {
     logout();
@@ -94,7 +95,11 @@ export function NavBar() {
                   }}
                 >
                   <span className="nav-avatar" aria-hidden="true">
-                    {(user?.name || mockMember.name).charAt(0)}
+                    {profileImage ? (
+                      <img src={profileImage} alt="" />
+                    ) : (
+                      (user?.name || mockMember.name).charAt(0)
+                    )}
                   </span>
                   <span className="nav-user-name">
                     {user?.name || mockMember.name}

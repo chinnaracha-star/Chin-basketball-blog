@@ -1,18 +1,46 @@
 import { Camera, CheckCircle2, User } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { MemberLayout } from "../components";
 import { mockMember } from "../data/memberMock";
+import { useAuth } from "../hooks/useAuth";
+import { updateProfileOnServer } from "../services/profileApi";
+
+function getProfileValues(user) {
+  return {
+    name: user?.name || mockMember.name,
+    username: user?.username || mockMember.username,
+    email: user?.email || mockMember.email,
+    bio: user?.bio || mockMember.bio,
+    avatar: user?.profilePic || user?.avatar || mockMember.avatar,
+  };
+}
 
 function ProfilePage() {
-  const [values, setValues] = useState(mockMember);
-  const [savedProfile, setSavedProfile] = useState(mockMember);
-  const [avatarPreview, setAvatarPreview] = useState(mockMember.avatar);
+  const { updateProfile, user } = useAuth();
+  const [values, setValues] = useState(() => getProfileValues(user));
+  const [savedProfile, setSavedProfile] = useState(() =>
+    getProfileValues(user),
+  );
+  const [avatarPreview, setAvatarPreview] = useState(
+    () => getProfileValues(user).avatar,
+  );
+  const [imageFile, setImageFile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   const avatarInitial = useMemo(
     () => values.name.trim().charAt(0).toUpperCase() || "U",
     [values.name],
+  );
+
+  useEffect(
+    () => () => {
+      if (avatarPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    },
+    [avatarPreview],
   );
 
   function handleChange(event) {
@@ -25,17 +53,66 @@ function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const nextAvatarUrl = URL.createObjectURL(file);
-    setAvatarPreview(nextAvatarUrl);
-    setValues((current) => ({ ...current, avatar: nextAvatarUrl }));
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      event.target.value = "";
+      setImageFile(null);
+      toast.error("Please upload a JPEG, PNG, GIF or WebP image");
+      return;
+    }
+
+    if (file.size > maxSize) {
+      event.target.value = "";
+      setImageFile(null);
+      toast.error("Profile image must be smaller than 5MB");
+      return;
+    }
+
+    setImageFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
     setIsSaved(false);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setSavedProfile({ ...values, avatar: avatarPreview });
-    setIsSaved(true);
-    toast.success("Profile updated successfully");
+    setIsSaving(true);
+    setIsSaved(false);
+
+    try {
+      const result = await updateProfileOnServer({
+        name: values.name.trim(),
+        username: values.username.trim(),
+        imageFile,
+      });
+      const nextAvatar = result.user.profilePic || avatarPreview;
+      const nextProfile = {
+        ...values,
+        name: result.user.name,
+        username: result.user.username,
+        email: result.user.email || values.email,
+        avatar: nextAvatar,
+      };
+
+      setValues(nextProfile);
+      setSavedProfile(nextProfile);
+      setAvatarPreview(nextAvatar);
+      setImageFile(null);
+      updateProfile({
+        ...result.user,
+        bio: nextProfile.bio,
+      });
+      setIsSaved(true);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Failed to update profile. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -55,13 +132,14 @@ function ProfilePage() {
               Upload profile image
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 onChange={handleAvatarChange}
+                disabled={isSaving}
               />
             </label>
             <p className="member-help-text">
-              JPG or PNG is recommended. A default avatar appears when no image
-              is uploaded.
+              JPEG, PNG, GIF or WebP up to 5MB. A default avatar appears when
+              no image is uploaded.
             </p>
           </div>
         </div>
@@ -91,7 +169,7 @@ function ProfilePage() {
               name="email"
               type="email"
               value={values.email}
-              onChange={handleChange}
+              readOnly
               required
             />
           </label>
@@ -109,8 +187,12 @@ function ProfilePage() {
         )}
 
         <div className="member-form-actions">
-          <button type="submit" className="member-primary-button">
-            Save profile
+          <button
+            type="submit"
+            className="member-primary-button"
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save profile"}
           </button>
         </div>
       </form>

@@ -56,7 +56,7 @@ export function MemberLayout({ title, actions, children }) {
         <div className="member-sidebar-footer">
           <NavLink to="/" className="member-sidebar-link">
             <ExternalLink aria-hidden="true" />
-            <span>hh. website</span>
+            <span>NBA News.</span>
           </NavLink>
           <button
             type="button"

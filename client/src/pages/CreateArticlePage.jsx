@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { MemberLayout } from "../components";
 import { useAdminArticles } from "../hooks/useAdminArticles";
 import { useAdminCategories } from "../hooks/useAdminCategories";
+import { createPostWithImage } from "../services/postsApi";
 
 const emptyArticle = {
   title: "",
@@ -37,6 +38,8 @@ function CreateArticlePage() {
   const article = isEditing ? getArticleById(articleId) : null;
   const [values, setValues] = useState(() => getFormValues(article));
   const [errors, setErrors] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -47,6 +50,32 @@ function CreateArticlePage() {
   function handleThumbnailChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      event.target.value = "";
+      setImageFile(null);
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        thumbnail: "Please upload a JPEG, PNG, GIF or WebP image.",
+      }));
+      return;
+    }
+
+    if (file.size > maxSize) {
+      event.target.value = "";
+      setImageFile(null);
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        thumbnail: "Image must be smaller than 5MB.",
+      }));
+      return;
+    }
+
+    setImageFile(file);
+    setErrors((currentErrors) => ({ ...currentErrors, thumbnail: "" }));
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -62,6 +91,9 @@ function CreateArticlePage() {
     const nextErrors = {};
 
     if (!values.category) nextErrors.category = "Please select a category.";
+    if (!isEditing && !imageFile) {
+      nextErrors.thumbnail = "Please select a thumbnail image.";
+    }
     if (!values.title.trim()) nextErrors.title = "Please enter an article title.";
     if (!values.introduction.trim()) {
       nextErrors.introduction = "Please enter an introduction.";
@@ -71,7 +103,7 @@ function CreateArticlePage() {
     return nextErrors;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const status = event.nativeEvent.submitter?.value || "Draft";
     const nextErrors = validate();
@@ -90,16 +122,57 @@ function CreateArticlePage() {
     if (isEditing) {
       updateArticle(articleId, articleValues);
       toast.success("Article updated successfully");
-    } else {
-      createArticle(articleValues);
+      navigate("/admin");
+      return;
+    }
+
+    const selectedCategory = categories.find(
+      (category) => category.name === values.category,
+    );
+    const categoryId = Number(selectedCategory?.id);
+
+    if (!Number.isInteger(categoryId) || categoryId < 1) {
+      setErrors({
+        category: "This category is not connected to the database.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await createPostWithImage({
+        title: articleValues.title,
+        categoryId,
+        description: articleValues.introduction,
+        content: articleValues.content,
+        statusId: status === "Draft" ? 1 : 2,
+        imageFile,
+      });
+
+      createArticle({
+        ...articleValues,
+        id: result.post?.id,
+        thumbnail: result.post?.image || values.thumbnail,
+      });
       toast.success(
         status === "Draft"
           ? "Article saved as draft"
           : "Article published successfully",
       );
+      navigate("/admin");
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to create post. Please try again.";
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        form: message,
+      }));
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    navigate("/admin");
   }
 
   if (isEditing && !article) {
@@ -124,8 +197,9 @@ function CreateArticlePage() {
             name="status"
             value="Draft"
             className="member-secondary-button"
+            disabled={isSubmitting}
           >
-            Save as draft
+            {isSubmitting ? "Saving..." : "Save as draft"}
           </button>
           <button
             type="submit"
@@ -133,8 +207,9 @@ function CreateArticlePage() {
             name="status"
             value="Published"
             className="member-primary-button"
+            disabled={isSubmitting}
           >
-            Save and publish
+            {isSubmitting ? "Saving..." : "Save and publish"}
           </button>
         </>
       }
@@ -157,11 +232,13 @@ function CreateArticlePage() {
           <span className="member-secondary-button thumbnail-button">
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/gif,image/webp"
               onChange={handleThumbnailChange}
+              disabled={isSubmitting}
             />
             Upload thumbnail image
           </span>
+          {errors.thumbnail && <small role="alert">{errors.thumbnail}</small>}
         </label>
         <label className="member-field">
           Category
@@ -221,6 +298,11 @@ function CreateArticlePage() {
           />
           {errors.content && <small role="alert">{errors.content}</small>}
         </label>
+        {errors.form && (
+          <p className="auth-form-error" role="alert">
+            {errors.form}
+          </p>
+        )}
       </form>
     </MemberLayout>
   );

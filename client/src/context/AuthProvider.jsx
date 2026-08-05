@@ -8,6 +8,26 @@ import {
   storeToken,
 } from "../services/authApi";
 
+const PROFILE_STORAGE_KEY = "chin-basketball-blog-profile";
+
+function getUserStorageId(user) {
+  return user?.id || user?.email;
+}
+
+function mergeStoredProfile(user) {
+  try {
+    const storedValue = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!storedValue) return user;
+
+    const storedProfile = JSON.parse(storedValue);
+    if (storedProfile.ownerId !== getUserStorageId(user)) return user;
+
+    return { ...user, ...storedProfile.profile };
+  } catch {
+    return user;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(Boolean(getStoredToken()));
@@ -17,7 +37,7 @@ export function AuthProvider({ children }) {
     if (!token) return;
 
     getCurrentUser()
-      .then(setUser)
+      .then((currentUser) => setUser(mergeStoredProfile(currentUser)))
       .catch(() => clearStoredToken())
       .finally(() => setIsAuthLoading(false));
   }, []);
@@ -33,8 +53,9 @@ export function AuthProvider({ children }) {
 
         try {
           const currentUser = await getCurrentUser();
-          setUser(currentUser);
-          return currentUser;
+          const userWithProfile = mergeStoredProfile(currentUser);
+          setUser(userWithProfile);
+          return userWithProfile;
         } catch (error) {
           clearStoredToken();
           throw error;
@@ -43,6 +64,21 @@ export function AuthProvider({ children }) {
       logout() {
         clearStoredToken();
         setUser(null);
+      },
+      updateProfile(profile) {
+        setUser((currentUser) => {
+          if (!currentUser) return currentUser;
+
+          const nextUser = { ...currentUser, ...profile };
+          window.localStorage.setItem(
+            PROFILE_STORAGE_KEY,
+            JSON.stringify({
+              ownerId: getUserStorageId(currentUser),
+              profile,
+            }),
+          );
+          return nextUser;
+        });
       },
     }),
     [isAuthLoading, user],

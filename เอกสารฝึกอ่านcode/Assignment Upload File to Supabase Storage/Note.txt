@@ -1,0 +1,288 @@
+Assignment: Upload File to Supabase Storage
+===========================================
+
+1. Assignment นี้ทำอะไร
+
+Assignment นี้เพิ่มความสามารถในการอัปโหลดรูป Thumbnail จาก React ไปยัง Express
+จากนั้น Express จะอัปโหลดไฟล์ไปเก็บใน Supabase Storage
+เมื่ออัปโหลดสำเร็จ Backend จะนำ Public URL ของรูปไปบันทึกใน column image ของตาราง posts
+
+สิ่งสำคัญของ Assignment ไม่ใช่ UI แต่เป็นการสื่อสารแบบ multipart/form-data:
+
+React Form -> FormData -> Express -> Multer -> Supabase Storage -> PostgreSQL
+
+
+2. Branch ของงาน
+
+งานนี้อยู่ใน branch:
+
+Feature/Upload-Image
+
+branch นี้แยกจาก Feature/Authan เพราะฟีเจอร์อัปโหลดไฟล์เปลี่ยนทั้ง Frontend, Backend และ dependency
+
+
+3. ไฟล์สำคัญ
+
+server/middlewares/uploadPostImage.mjs
+- ตั้งค่า Multer แบบ memoryStorage
+- รับไฟล์จาก field ชื่อ imageFile
+- รับได้สูงสุดหนึ่งไฟล์
+- จำกัดขนาดไม่เกิน 5 MB
+- รับเฉพาะ JPEG, PNG, GIF และ WebP
+
+server/routes/posts.mjs
+- POST /posts ตรวจสิทธิ์ admin
+- รับข้อมูล multipart/form-data
+- อัปโหลด buffer ไปยัง Supabase Storage
+- ขอ Public URL
+- INSERT ข้อมูลบทความและ URL ลงตาราง posts
+- ถ้าบันทึก Database ไม่สำเร็จ จะพยายามลบรูปที่เพิ่งอัปโหลดเพื่อลดไฟล์กำพร้า
+
+client/src/services/postsApi.js
+- สร้าง FormData
+- ใส่ข้อมูลบทความและ imageFile
+- อ่าน access token
+- เรียก POST /posts พร้อม Authorization header
+
+client/src/pages/CreateArticlePage.jsx
+- ตรวจประเภทและขนาดไฟล์ก่อนส่ง
+- แสดงรูป Preview
+- ส่ง status_id 1 เมื่อ Save as draft
+- ส่ง status_id 2 เมื่อ Save and publish
+- แสดง loading และ error
+
+client/src/context/AdminCategoriesProvider.jsx
+- category เริ่มต้นใช้ ID ตัวเลข 1-4 เพื่อส่งเป็น Foreign Key ให้ Database
+
+
+4. Package ที่ใช้
+
+Backend ใช้ Multer:
+
+npm install multer --workspace server
+
+Multer มีหน้าที่อ่าน request แบบ multipart/form-data
+และทำให้เข้าถึงไฟล์ได้จาก req.files
+
+โปรเจกต์มี @supabase/supabase-js และ Axios อยู่แล้ว จึงไม่ต้องติดตั้งซ้ำ
+
+
+5. Environment Variables
+
+ไฟล์ server/.env ต้องมี:
+
+PORT=4000
+CONNECTION_STRING=postgresql://...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+SUPABASE_STORAGE_BUCKET=my-personal-blog
+FRONTEND_URL=http://localhost:5173
+
+ถ้าไม่ใส่ SUPABASE_STORAGE_BUCKET ระบบจะใช้ชื่อ my-personal-blog เป็นค่าเริ่มต้น
+
+ไฟล์ client/.env ต้องมี:
+
+VITE_API_BASE_URL=http://localhost:4000
+
+
+6. การตั้งค่า Supabase Storage ที่ต้องมี
+
+1) มี bucket ชื่อ my-personal-blog
+2) bucket ต้องเป็น Public เพราะระบบใช้ getPublicUrl()
+3) Storage Policy ต้องอนุญาตให้ authenticated user ที่เหมาะสม upload ไฟล์
+4) โฟลเดอร์ posts ไม่ต้องสร้างล่วงหน้า Supabase จะใช้ path ที่ส่งไปได้
+
+ไฟล์จะถูกเก็บด้วย path รูปแบบ:
+
+posts/TIMESTAMP_RANDOM-UUID.ext
+
+การใช้ timestamp และ UUID ช่วยลดโอกาสชื่อไฟล์ชนกัน
+
+
+7. Flow ฝั่ง Frontend
+
+เมื่อผู้ใช้เลือกไฟล์ handleThumbnailChange จะทำงาน:
+
+1) อ่านไฟล์แรกจาก event.target.files
+2) ตรวจ MIME type
+3) ตรวจว่าไม่เกิน 5 MB
+4) เก็บ File object ใน state imageFile
+5) ใช้ FileReader สร้าง Preview
+
+เมื่อกดปุ่ม Save จะสร้าง FormData:
+
+formData.append("title", title)
+formData.append("category_id", categoryId)
+formData.append("description", description)
+formData.append("content", content)
+formData.append("status_id", statusId)
+formData.append("imageFile", imageFile)
+
+ชื่อ imageFile ต้องตรงกับ field ที่ Multer รอรับ
+
+ไม่จำเป็นต้องกำหนด Content-Type เองใน Axios
+Browser จะกำหนด multipart/form-data พร้อม boundary ที่ถูกต้องให้โดยอัตโนมัติ
+
+
+8. Authorization Header
+
+Frontend ส่ง token รูปแบบ:
+
+Authorization: Bearer ACCESS_TOKEN
+
+token ถูกอ่านจาก localStorage key:
+
+chin-basketball-blog-access-token
+
+Backend ใช้ protectAdmin ตรวจ:
+
+1) มี token หรือไม่
+2) token เป็นของผู้ใช้จริงหรือไม่
+3) ตาราง users ระบุ role เป็น admin หรือไม่
+
+ถ้าไม่ login จะได้ 401 Unauthorized
+ถ้า login แล้วแต่ role ไม่ใช่ admin จะได้ 403 Forbidden
+
+
+9. ทำไมตรวจ Admin ก่อน Multer
+
+Route ใช้ลำดับ:
+
+router.post("/", protectAdmin, uploadPostImage, createPostWithImage)
+
+ระบบตรวจสิทธิ์ก่อนอ่านไฟล์เข้าสู่ memory
+จึงไม่เสีย memory และเวลาไปกับไฟล์จากผู้ใช้ที่ไม่มีสิทธิ์
+
+
+10. Flow ฝั่ง Backend
+
+1) protectAdmin ตรวจ token และ role
+2) uploadPostImage ใช้ Multer อ่านไฟล์ไว้ใน memory
+3) ตรวจว่า body ครบและ ID เป็นจำนวนเต็มบวก
+4) สร้าง Supabase client พร้อม access token
+5) upload file.buffer ไปยัง bucket
+6) เรียก getPublicUrl() เพื่อรับ URL
+7) INSERT title, URL, category, description, content และ status ลง posts
+8) ส่ง 201 Created และข้อมูล post กลับไป
+
+
+11. ตัวอย่าง Request
+
+Method:
+
+POST http://localhost:4000/posts
+
+Header:
+
+Authorization: Bearer ACCESS_TOKEN
+
+Body ต้องเลือก form-data:
+
+title         My Basketball Article
+category_id   1
+description   Short introduction
+content       Full article content
+status_id     2
+imageFile     เลือกไฟล์รูปภาพ
+
+อย่าส่งเป็น raw JSON เพราะ JSON ไม่สามารถบรรจุ File object แบบ multipart ได้
+
+
+12. Response สำเร็จ
+
+Status:
+
+201 Created
+
+ตัวอย่าง:
+
+{
+  "message": "Created post successfully",
+  "post": {
+    "id": 10,
+    "title": "My Basketball Article",
+    "image": "https://PROJECT.supabase.co/storage/v1/object/public/..."
+  }
+}
+
+
+13. Validation และ Error ที่อาจพบ
+
+400 Bad Request
+- ไม่ได้เลือกรูป
+- ไฟล์ไม่ใช่ JPEG, PNG, GIF หรือ WebP
+- ไฟล์เกิน 5 MB
+- ข้อมูลบทความไม่ครบ
+- category_id หรือ status_id ไม่ใช่จำนวนเต็มบวก
+
+401 Unauthorized
+- ไม่มี access token
+- token หมดอายุหรือไม่ถูกต้อง
+
+403 Forbidden
+- ผู้ใช้ไม่ใช่ admin
+
+500 Internal Server Error
+- Supabase Storage upload ไม่สำเร็จ
+- Storage Policy ไม่อนุญาต
+- bucket name ไม่ถูกต้อง
+- Database INSERT ไม่สำเร็จ
+- category_id หรือ status_id ไม่มีอยู่จริงในตารางอ้างอิง
+
+
+14. วิธีเตรียม Admin สำหรับทดสอบ
+
+สมัครสมาชิกและเปลี่ยน role ใน SQL Editor:
+
+UPDATE users
+SET role = 'admin'
+WHERE username = 'your_username';
+
+จากนั้น logout และ login ใหม่ แล้วเปิด:
+
+http://localhost:5173/admin/articles/create
+
+
+15. วิธีเปิดและทดสอบ
+
+Terminal 1:
+
+npm run dev:server
+
+Terminal 2:
+
+npm run dev
+
+ขั้นตอนทดสอบ:
+
+1) Login ด้วย admin
+2) เปิด /admin/articles/create
+3) เลือก Category
+4) เลือกรูปที่ถูกประเภทและไม่เกิน 5 MB
+5) กรอก Title, Introduction และ Content
+6) กด Save as draft หรือ Save and publish
+7) ตรวจ Supabase Storage ว่ามีไฟล์ใน posts/
+8) ตรวจตาราง posts ว่า column image เป็น Public URL
+9) เปิดหน้าแรกเพื่อตรวจว่าบทความอ่าน URL รูปได้
+
+
+16. Test Cases ที่ควรลอง
+
+- JPEG ขนาดเล็ก: ต้องสำเร็จ
+- PNG ขนาดเล็ก: ต้องสำเร็จ
+- ไฟล์ .txt: ต้องถูกปฏิเสธ
+- รูปเกิน 5 MB: ต้องถูกปฏิเสธ
+- ไม่เลือกรูป: ต้องแสดง error
+- ไม่ส่ง token: ต้องได้ 401
+- login เป็น user: ต้องได้ 403
+- login เป็น admin: ต้องอัปโหลดได้
+- ใช้ category_id ที่ไม่มีใน Database: ต้องไม่บันทึก post
+
+
+17. สรุปสั้น
+
+Frontend ไม่ได้ส่งรูปเป็น URL ตั้งแต่แรก แต่ส่ง File object ผ่าน FormData
+Multer เปลี่ยน multipart file ให้เป็น Buffer ใน req.files
+Backend ส่ง Buffer ไปเก็บที่ Supabase Storage
+Supabase ส่ง Public URL กลับมา
+สุดท้าย Backend เก็บ URL นั้นในตาราง posts เพื่อให้หน้า Blog นำไปแสดงผลได้

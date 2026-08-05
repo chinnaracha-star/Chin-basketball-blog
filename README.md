@@ -95,3 +95,13 @@ npm run build
 ```
 
 หน้าทดสอบ API อยู่ที่ `http://localhost:5173/test-health`
+
+## อัปโหลดรูปบทความ
+
+1. ตั้งค่า Supabase Storage bucket ชื่อ `my-personal-blog`
+2. ใส่ `SUPABASE_STORAGE_BUCKET=my-personal-blog` ใน `server/.env`
+3. Login ด้วยผู้ใช้ที่มี role เป็น `admin`
+4. เปิด `http://localhost:5173/admin/articles/create`
+5. เลือกรูป JPEG, PNG, GIF หรือ WebP ขนาดไม่เกิน 5 MB แล้วบันทึกบทความ
+
+Frontend จะส่ง `multipart/form-data` ไปที่ `POST /posts` และ Backend จะเก็บรูปใน Supabase Storage ก่อนบันทึก public URL ลงฐานข้อมูล
