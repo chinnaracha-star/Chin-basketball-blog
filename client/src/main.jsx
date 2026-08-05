@@ -18,7 +18,7 @@ createRoot(document.getElementById("root")).render(
           </AdminCategoriesProvider>
         </AdminArticlesProvider>
       </AuthProvider>
-      <Toaster position="top-center" richColors />
+      <Toaster position="bottom-right" richColors />
     </BrowserRouter>
   </StrictMode>,
 );

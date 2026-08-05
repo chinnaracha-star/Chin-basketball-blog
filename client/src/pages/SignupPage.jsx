@@ -2,9 +2,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "../components";
-
-// --- Mock Data: อีเมลที่สมมติว่ามีอยู่ในระบบแล้ว ---
-const EXISTING_EMAILS = ["demo@mail.com", "member@example.com"];
+import { getApiError, registerUser } from "../services/authApi";
 
 /**
  * ตรวจสอบข้อมูลทุกช่องก่อนจำลองการสมัครสมาชิก
@@ -20,11 +18,9 @@ function validate(values) {
   }
   if (!/^\S+@\S+\.\S+$/.test(values.email)) {
     errors.email = "Please enter a valid email address.";
-  } else if (EXISTING_EMAILS.includes(values.email.trim().toLowerCase())) {
-    errors.email = "This email is already in use.";
   }
-  if (values.password.length < 5) {
-    errors.password = "Password must be at least 5 characters.";
+  if (values.password.length < 6) {
+    errors.password = "Password must be at least 6 characters.";
   }
 
   return errors;
@@ -42,21 +38,34 @@ function SignupPage() {
   });
   const [errors, setErrors] = useState({}); // error ของ input แต่ละช่อง
   const [isSuccess, setIsSuccess] = useState(false); // ระบุว่าการสมัครสำเร็จหรือยัง
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Input Handler: อัปเดตค่าช่องที่กำลังพิมพ์และล้าง error ของช่องนั้น ---
   function handleChange(event) {
     const name = event.target.name;
     const value = event.target.value;
     setValues((current) => ({ ...current, [name]: value }));
-    setErrors((current) => ({ ...current, [name]: "" }));
+    setErrors((current) => ({ ...current, [name]: "", form: "" }));
   }
 
   // --- Submit Handler: แสดง error หรือเปลี่ยนไปยัง success state ---
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = validate(values);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) setIsSuccess(true);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      await registerUser(values);
+      setIsSuccess(true);
+    } catch (error) {
+      setErrors({
+        form: getApiError(error, "Could not create your account."),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -115,8 +124,13 @@ function SignupPage() {
                   error={errors.password}
                   onChange={handleChange}
                 />
-                <button className="auth-submit" type="submit">
-                  Sign up
+                {errors.form && (
+                  <p className="auth-form-error" role="alert">
+                    {errors.form}
+                  </p>
+                )}
+                <button className="auth-submit" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Signing up..." : "Sign up"}
                 </button>
               </form>
               <p className="auth-switch">

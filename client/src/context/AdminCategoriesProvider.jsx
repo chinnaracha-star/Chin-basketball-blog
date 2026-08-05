@@ -3,16 +3,25 @@ import { AdminCategoriesContext } from "./AdminCategoriesContext";
 
 const STORAGE_KEY = "nba-news-admin-categories";
 const initialCategories = [
-  { id: "highlight", name: "Highlight" },
-  { id: "cat", name: "Cat" },
-  { id: "inspiration", name: "Inspiration" },
-  { id: "general", name: "General" },
+  { id: 1, name: "Highlight" },
+  { id: 2, name: "Cat" },
+  { id: 3, name: "Inspiration" },
+  { id: 4, name: "General" },
 ];
+
+const defaultCategoryIds = new Map(
+  initialCategories.map((category) => [category.name, category.id]),
+);
 
 function getInitialCategories() {
   try {
     const savedCategories = window.localStorage.getItem(STORAGE_KEY);
-    return savedCategories ? JSON.parse(savedCategories) : initialCategories;
+    if (!savedCategories) return initialCategories;
+
+    return JSON.parse(savedCategories).map((category) => ({
+      ...category,
+      id: defaultCategoryIds.get(category.name) ?? category.id,
+    }));
   } catch {
     return initialCategories;
   }

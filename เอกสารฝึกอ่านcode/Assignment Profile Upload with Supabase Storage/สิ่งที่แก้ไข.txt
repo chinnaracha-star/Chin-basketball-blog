@@ -1,0 +1,293 @@
+สรุปสิ่งที่แก้ไข: Profile Upload with Supabase Storage
+====================================================
+
+วันที่แก้ไข: 4 สิงหาคม 2026
+Branch: Feature/Upload-Image
+
+
+1. ปัญหาก่อนแก้
+
+ก่อนหน้านี้หน้า Profile สามารถเลือกรูปและแสดง Preview ได้
+แต่รูปไม่ได้ถูกส่งไป Backend และไม่ได้ถูกอัปโหลดไป Supabase Storage
+
+ระบบเดิมทำงานดังนี้:
+
+เลือกไฟล์
+-> FileReader แปลงไฟล์เป็น Base64
+-> เก็บข้อมูลไว้ใน AuthProvider และ localStorage
+-> NavBar แสดงรูปจาก Browser เครื่องปัจจุบัน
+
+ผลที่เกิดขึ้น:
+- ไม่มีไฟล์ใน Supabase Storage
+- users.profile_pic ใน Database ไม่ถูกอัปเดต
+- รูปใช้งานได้เฉพาะ Browser เครื่องเดิม
+- เปิดจากอุปกรณ์อื่นจะไม่เห็นรูป
+- Base64 ใช้พื้นที่ localStorage มาก
+
+
+2. Flow ใหม่หลังแก้
+
+ระบบใหม่ทำงานดังนี้:
+
+เลือกไฟล์ใน ProfilePage
+-> เก็บ File object ไว้ใน state
+-> สร้าง blob URL สำหรับ Preview ชั่วคราว
+-> กด Save profile
+-> สร้าง FormData
+-> ส่ง PUT /profiles พร้อม access token
+-> protectUser ตรวจสอบผู้ใช้
+-> Multer อ่านไฟล์เป็น Buffer
+-> Backend อัปโหลด Buffer ไป Supabase Storage
+-> ขอ Public URL
+-> UPDATE users.profile_pic
+-> ส่งข้อมูล Profile ใหม่กลับ Frontend
+-> AuthProvider อัปเดตข้อมูลส่วนกลาง
+-> NavBar แสดงรูปใหม่ทันที
+
+
+3. ไฟล์ที่เพิ่ม
+
+3.1 client/src/services/profileApi.js
+
+เพิ่ม Service สำหรับส่ง Profile ไป Backend
+
+หน้าที่:
+- สร้าง FormData
+- append name
+- append username
+- append imageFile เมื่อมีไฟล์ใหม่
+- อ่าน access token จาก localStorage
+- ส่ง PUT /profiles
+- ไม่กำหนด Content-Type เอง เพื่อให้ Browser สร้าง multipart boundary
+
+
+3.2 server/middlewares/uploadProfileImage.mjs
+
+เพิ่ม Multer middleware สำหรับรูป Profile โดยเฉพาะ
+
+หน้าที่:
+- ใช้ multer.memoryStorage()
+- รับ field ชื่อ imageFile
+- รับสูงสุดหนึ่งไฟล์
+- จำกัดขนาดไม่เกิน 5 MB
+- รับ JPEG, PNG, GIF และ WebP
+- ตอบ 400 เมื่อประเภทหรือขนาดไฟล์ไม่ถูกต้อง
+
+
+3.3 เอกสารฝึกอ่านcode/Assignment Profile Upload with Supabase Storage/Note.txt
+
+เพิ่ม Note อธิบาย Assignment แบบละเอียด ตั้งแต่ Frontend ถึง Database
+
+
+4. ไฟล์ที่แก้ไข
+
+4.1 client/src/pages/ProfilePage.jsx
+
+ก่อนแก้:
+- ใช้ FileReader.readAsDataURL()
+- รูปถูกเก็บเป็น Base64
+- handleSubmit อัปเดตเฉพาะ state และ localStorage
+- ไม่มี Axios และ FormData
+
+หลังแก้:
+- เพิ่ม imageFile state เพื่อเก็บ File object จริง
+- เพิ่ม isSaving state สำหรับป้องกันการกด Save ซ้ำ
+- ใช้ URL.createObjectURL() แสดง Preview
+- เรียก URL.revokeObjectURL() เมื่อเลิกใช้ Preview
+- รองรับ JPEG, PNG, GIF และ WebP
+- จำกัดไฟล์ไม่เกิน 5 MB
+- เรียก updateProfileOnServer() ตอน Submit
+- ใช้ Public URL จาก Server หลังอัปโหลดสำเร็จ
+- แสดง Saving... ระหว่างส่งข้อมูล
+- แสดง Toast เมื่อสำเร็จหรือผิดพลาด
+- ตั้ง Email เป็น readOnly เพราะการเปลี่ยน Email ต้องใช้ Supabase Auth flow
+
+
+4.2 server/routes/profiles.mjs
+
+ก่อนแก้:
+- มีเฉพาะ GET /profiles แบบข้อมูลตัวอย่าง
+- ส่ง name john และ age 20
+- ไม่มีระบบแก้ Profile
+- ไม่มี Supabase Storage
+- ไม่มี Database UPDATE
+
+หลังแก้:
+- เพิ่ม PUT /profiles
+- ใช้ protectUser ตรวจ access token
+- ใช้ uploadProfileImage รับ multipart file
+- อ่าน user id จาก req.user
+- อัปโหลดรูปไป bucket my-personal-blog
+- เก็บไฟล์ใน path profiles/
+- ใช้ user id, timestamp และ UUID ป้องกันชื่อชนกัน
+- ขอ Public URL ด้วย getPublicUrl()
+- สร้าง Dynamic SQL ตาม field ที่ได้รับ
+- อัปเดต name, username และ profile_pic
+- ใช้ SQL parameters ป้องกัน SQL Injection
+- ตอบ 409 เมื่อ username ซ้ำ
+- ส่งข้อมูล User ที่อัปเดตแล้วกลับ Frontend
+- ลบรูปที่เพิ่งอัปโหลดถ้า Database UPDATE ไม่สำเร็จ
+
+
+4.3 client/src/context/AuthProvider.jsx
+
+ระบบ Profile ใช้ updateProfile() ที่เพิ่มไว้ก่อนหน้านี้
+หลัง Server ตอบกลับ จะนำข้อมูลและ Public URL ใหม่มาอัปเดต User ส่วนกลาง
+
+ผลคือ:
+- NavBar re-render ทันที
+- รูปมุมขวาบนเปลี่ยนทันที
+- เมื่อ Login ใหม่ get-user จะอ่าน profile_pic จาก Database
+
+
+4.4 client/src/components/NavBar.jsx
+
+NavBar รองรับการแสดง user.profilePic
+
+ถ้ามี Public URL:
+- แสดง <img>
+
+ถ้าไม่มีรูป:
+- แสดงตัวอักษรแรกของชื่อเหมือนเดิม
+
+
+4.5 client/src/index.css
+
+เพิ่ม style ให้รูปใน .nav-avatar:
+- กว้างและสูงเต็ม Avatar
+- ใช้ object-fit: cover
+- ซ่อนส่วนที่เกินวงกลมด้วย overflow: hidden
+
+
+5. Endpoint ที่ใช้
+
+Method:
+
+PUT
+
+URL:
+
+http://localhost:4000/profiles
+
+Headers:
+
+Authorization: Bearer ACCESS_TOKEN
+
+Body แบบ multipart/form-data:
+
+name        ชื่อผู้ใช้
+username    username
+imageFile   ไฟล์รูปภาพ (ส่งหรือไม่ส่งก็ได้)
+
+
+6. เหตุผลที่ใช้ /profiles
+
+ตัวอย่าง Assignment ใช้ /profile และ port 4001
+แต่โปรเจกต์จริง mount Router แบบนี้:
+
+app.use("/profiles", profilesRouter)
+
+และ Server ใช้ port 4000
+
+จึงปรับ endpoint ให้เข้ากับโปรเจกต์เป็น:
+
+PUT http://localhost:4000/profiles
+
+
+7. จุดที่ปรับให้ดีกว่าตัวอย่าง
+
+ตัวอย่างวาง Middleware แบบ:
+
+[imageFileUpload, protectUser]
+
+โค้ดที่แก้ใช้:
+
+protectUser, uploadProfileImage
+
+เหตุผล:
+- ตรวจสิทธิ์ก่อนอ่านไฟล์เข้า RAM
+- ผู้ใช้ที่ไม่มี token จะถูกปฏิเสธทันที
+- ลดการใช้ Memory กับ Request ที่ไม่มีสิทธิ์
+
+จุดที่เพิ่มอีก:
+- ตรวจประเภทไฟล์ทั้ง Frontend และ Backend
+- จำกัดขนาดทั้ง Frontend และ Backend
+- ใช้ UUID ในชื่อไฟล์
+- เก็บนามสกุลไฟล์
+- Cleanup รูปเมื่อ Database ล้มเหลว
+- ตรวจ username ซ้ำและตอบ 409
+- คืนข้อมูล User ใหม่ให้ Frontend โดยไม่ต้อง request ซ้ำทันที
+
+
+8. ข้อมูลที่บันทึกจริง
+
+Supabase Storage เก็บ:
+- Binary image file
+- path รูปแบบ profiles/USER-ID_TIMESTAMP_UUID.ext
+
+PostgreSQL users เก็บ:
+- name
+- username
+- profile_pic ซึ่งเป็น Public URL
+
+Frontend เก็บ:
+- ข้อมูล User ปัจจุบันใน AuthProvider
+- ไม่เก็บไฟล์รูป Base64 เป็นแหล่งข้อมูลหลักอีกแล้ว
+
+
+9. สิ่งที่ยังไม่รวมใน Assignment นี้
+
+- Email ไม่ถูกแก้จาก PUT /profiles
+  เพราะ Email อยู่ใน Supabase Auth และต้องใช้ขั้นตอนยืนยัน Email แยก
+
+- Bio ยังไม่ถูกบันทึกใน PostgreSQL
+  เพราะตาราง users ปัจจุบันไม่มี column bio
+
+- ยังไม่มีระบบลบรูป Profile เก่าหลังเปลี่ยนรูปใหม่
+  รูปใหม่ถูกอัปโหลดด้วย path ใหม่เพื่อป้องกัน cache และชื่อชนกัน
+
+
+10. การทดสอบที่ทำแล้ว
+
+- Backend modules import สำเร็จ
+- PNG ที่ถูกต้องผ่าน Multer และตอบ 200 ใน middleware test
+- ไฟล์ text ถูกปฏิเสธและตอบ 400
+- PUT /profiles ที่ไม่มี token ตอบ 401
+- ESLint ผ่าน
+- Production build ผ่าน
+- git diff --check ผ่าน
+
+
+11. สิ่งที่ต้องตั้งค่าก่อนทดสอบจริง
+
+server/.env ต้องมี:
+
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR-PUBLISHABLE-OR-ANON-KEY
+SUPABASE_STORAGE_BUCKET=my-personal-blog
+
+Supabase ต้องมี:
+- Public bucket ชื่อ my-personal-blog
+- Storage Policy อนุญาต authenticated user ให้อัปโหลด
+- ตาราง users มี column profile_pic
+
+
+12. วิธีตรวจว่างานสำเร็จ
+
+1) Login
+2) เปิด /member/profile
+3) เลือกรูปไม่เกิน 5 MB
+4) กด Save profile
+5) รูปใน NavBar เปลี่ยนทันที
+6) ตรวจ Storage ต้องพบไฟล์ใน profiles/
+7) ตรวจ users.profile_pic ต้องเป็น Public URL
+8) Refresh หน้า รูปต้องยังอยู่
+9) Logout และ Login ใหม่ รูปต้องกลับมา
+
+
+13. สรุปสั้น
+
+การแก้ไขครั้งนี้เปลี่ยน Profile image จาก Preview/LocalStorage แบบจำลอง
+เป็น File Upload จริงที่ส่งผ่าน FormData และ Multer
+รูปถูกเก็บใน Supabase Storage และ URL ถูกเก็บใน PostgreSQL
+ทำให้ Profile image ใช้งานได้ข้าม Browser และอุปกรณ์

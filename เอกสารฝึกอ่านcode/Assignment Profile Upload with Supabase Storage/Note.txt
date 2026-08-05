@@ -1,0 +1,248 @@
+Assignment: Profile Upload with Supabase Storage
+===============================================
+
+1. Assignment นี้ทำอะไร
+
+Assignment นี้เปลี่ยนการอัปโหลดรูป Profile จากระบบจำลองใน Browser
+ให้เป็นการอัปโหลดไฟล์จริงผ่าน Backend ไปยัง Supabase Storage
+แล้วนำ Public URL ไปเก็บใน users.profile_pic ของ PostgreSQL
+
+Flow หลัก:
+
+ProfilePage
+-> FormData
+-> PUT /profiles
+-> protectUser
+-> Multer memoryStorage
+-> Supabase Storage/profiles
+-> Public URL
+-> UPDATE users.profile_pic
+-> AuthProvider และ NavBar
+
+
+2. ไฟล์ที่เกี่ยวข้อง
+
+client/src/pages/ProfilePage.jsx
+- เก็บ File object ใน imageFile state
+- ตรวจ JPEG, PNG, GIF และ WebP
+- จำกัดขนาด 5 MB
+- ใช้ URL.createObjectURL() สำหรับ Preview ชั่วคราว
+- เรียก API เมื่อกด Save profile
+
+client/src/services/profileApi.js
+- สร้าง FormData
+- เพิ่ม name, username และ imageFile
+- ส่ง PUT /profiles
+- ส่ง access token ผ่าน Authorization header
+- ไม่กำหนด Content-Type เอง เพื่อให้ Browser สร้าง multipart boundary
+
+server/middlewares/uploadProfileImage.mjs
+- ใช้ multer.memoryStorage()
+- รับ field ชื่อ imageFile สูงสุดหนึ่งไฟล์
+- ตรวจ MIME type และขนาดซ้ำที่ Backend
+
+server/routes/profiles.mjs
+- ตรวจ token ด้วย protectUser
+- อัปโหลด file.buffer ไป Supabase Storage
+- ขอ Public URL
+- สร้าง Dynamic SQL สำหรับ name, username และ profile_pic
+- UPDATE ตาราง users ด้วย user id จาก token
+- ส่งข้อมูล Profile ที่อัปเดตแล้วกลับไป
+
+client/src/context/AuthProvider.jsx
+- รับ Public URL จาก Server
+- กระจายข้อมูล Profile ใหม่ให้ NavBar
+- NavBar จึงเปลี่ยนรูปทันที
+
+
+3. Frontend: การเลือกไฟล์
+
+เมื่อผู้ใช้เลือกไฟล์:
+
+const file = event.target.files?.[0];
+
+ระบบตรวจ:
+- MIME type ต้องเป็น image/jpeg, image/png, image/gif หรือ image/webp
+- ขนาดต้องไม่เกิน 5 * 1024 * 1024 bytes
+
+จากนั้นเก็บไฟล์จริง:
+
+setImageFile(file);
+
+และสร้าง Preview ชั่วคราว:
+
+setAvatarPreview(URL.createObjectURL(file));
+
+blob URL ใช้แสดง Preview เท่านั้น ยังไม่ใช่ URL จาก Supabase
+ระบบเรียก URL.revokeObjectURL() เมื่อไม่ใช้แล้วเพื่อลด memory leak
+
+
+4. Frontend: การส่ง FormData
+
+เมื่อกด Save profile จะเรียก client/src/services/profileApi.js
+
+FormData ประกอบด้วย:
+
+formData.append("name", name);
+formData.append("username", username);
+formData.append("imageFile", imageFile);
+
+ถ้าไม่ได้เลือกไฟล์ใหม่ ระบบจะไม่ append imageFile
+จึงสามารถแก้เฉพาะ name หรือ username ได้
+
+Request:
+
+PUT http://localhost:4000/profiles
+
+Header:
+
+Authorization: Bearer ACCESS_TOKEN
+
+ไม่ต้องกำหนด Content-Type: multipart/form-data เอง
+Axios และ Browser จะใส่ boundary ที่ถูกต้องให้
+
+
+5. Backend: Multer
+
+Express อ่าน JSON ได้ด้วย express.json()
+แต่ไฟล์จาก FormData เป็น multipart/form-data จึงต้องใช้ Multer
+
+Multer เก็บไฟล์ไว้ใน RAM ชั่วคราว:
+
+storage: multer.memoryStorage()
+
+ไฟล์จะอยู่ที่:
+
+req.files?.imageFile?.[0]
+
+property สำคัญ:
+- file.buffer คือ binary data ที่ส่งให้ Supabase
+- file.mimetype คือประเภทไฟล์
+- file.originalname คือชื่อไฟล์เดิม
+
+
+6. ลำดับ Middleware
+
+Route ใช้ลำดับ:
+
+router.put("/", protectUser, uploadProfileImage, controller)
+
+ตรวจผู้ใช้ก่อนอ่านไฟล์เข้า memory
+ลำดับนี้ปลอดภัยกว่าการให้ Multer อ่านไฟล์ก่อน protectUser
+
+
+7. การอัปโหลด Supabase Storage
+
+ชื่อ bucket มาจาก:
+
+SUPABASE_STORAGE_BUCKET=my-personal-blog
+
+ถ้าไม่ได้ตั้งค่า จะใช้ my-personal-blog เป็นค่าเริ่มต้น
+
+path ของไฟล์:
+
+profiles/USER-ID_TIMESTAMP_RANDOM-UUID.ext
+
+การใช้ user id, timestamp และ UUID ช่วยป้องกันชื่อชนกัน
+นามสกุลไฟล์ถูกเก็บไว้เพื่อให้ตรวจสอบไฟล์ได้ง่าย
+
+การ upload ใช้:
+
+supabase.storage
+  .from(bucketName)
+  .upload(filePath, file.buffer, {
+    contentType: file.mimetype,
+    upsert: false,
+  });
+
+
+8. Public URL
+
+หลัง upload สำเร็จ:
+
+supabase.storage.from(bucketName).getPublicUrl(uploadedPath)
+
+URL ที่ได้จะถูกบันทึกใน users.profile_pic
+ดังนั้น NavBar สามารถใช้:
+
+<img src={user.profilePic} />
+
+bucket ต้องเป็น Public จึงจะเปิด URL นี้ได้โดยตรง
+
+
+9. Dynamic SQL
+
+PUT request อาจส่งข้อมูลมาไม่ครบทุก field
+Backend จึงสร้าง fieldsToUpdate และ values ตามข้อมูลที่ได้รับ
+
+ตัวอย่างเมื่อส่ง name และ profile image:
+
+UPDATE users
+SET name = $1, profile_pic = $2
+WHERE id = $3
+
+Query ใช้ parameter placeholders เพื่อป้องกัน SQL Injection
+
+
+10. การจัดการ Error และ Cleanup
+
+- ไม่มีข้อมูลให้แก้ไข: 400
+- ไฟล์ผิดประเภทหรือเกิน 5 MB: 400
+- ไม่มี token หรือ token ผิด: 401
+- username ซ้ำ: 409
+- Storage หรือ Database ผิดพลาด: 500
+
+ถ้าอัปโหลดรูปสำเร็จ แต่ UPDATE Database ไม่สำเร็จ
+Backend จะพยายามลบรูปที่เพิ่งอัปโหลดออกจาก Storage
+เพื่อลดไฟล์กำพร้า
+
+
+11. วิธีทดสอบ
+
+1) ใส่ SUPABASE_URL และ SUPABASE_ANON_KEY ใน server/.env
+2) ตรวจว่า bucket my-personal-blog เป็น Public
+3) ตรวจ Storage Policy สำหรับ authenticated user
+4) เปิด Backend:
+
+npm run dev:server
+
+5) เปิด Frontend:
+
+npm run dev
+
+6) Login แล้วเปิด:
+
+http://localhost:5173/member/profile
+
+7) เลือกรูปไม่เกิน 5 MB แล้วกด Save profile
+8) ตรวจ Storage ว่ามีไฟล์ใน profiles/
+9) ตรวจ users.profile_pic ว่าเป็น Public URL
+10) Refresh หน้าเว็บ รูปต้องยังอยู่
+11) Logout/Login ใหม่ รูปต้องโหลดกลับมาจาก get-user
+
+
+12. ความแตกต่างจากระบบเดิม
+
+ระบบเดิม:
+- FileReader แปลงรูปเป็น Base64
+- เก็บรูปใน localStorage
+- ใช้ได้เฉพาะ Browser เครื่องนั้น
+- Database และ Supabase ไม่ได้รับรูป
+
+ระบบใหม่:
+- เก็บ File object เพื่อส่งจริง
+- ส่ง multipart/form-data ไป Express
+- Multer อ่านไฟล์เป็น Buffer
+- Supabase Storage เก็บไฟล์
+- PostgreSQL เก็บ Public URL
+- ใช้รูปเดียวกันได้ข้าม Browser และข้ามอุปกรณ์
+
+
+13. สรุป
+
+Assignment นี้ตรงกับ File Upload with Supabase Storage สำหรับ Profile:
+- Frontend ส่ง File ผ่าน FormData
+- Backend รับด้วย Multer
+- Supabase Storage เก็บไฟล์จริง
+- users.profile_pic เก็บ URL
+- AuthProvider และ NavBar แสดงรูปใหม่จาก URL ถาวร

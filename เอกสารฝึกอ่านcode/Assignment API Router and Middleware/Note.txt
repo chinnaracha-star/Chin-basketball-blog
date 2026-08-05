@@ -1,0 +1,430 @@
+API Router and Middleware
+Personal Blog Project
+
+ภาพรวม
+Assignment นี้เป็นการปรับโครงสร้าง API Server ให้ดูแลง่ายขึ้น
+จากเดิมที่เขียน API หลายตัวรวมกันอยู่ใน app.mjs
+ตอนนี้เราแยก API ออกเป็น Express Router แต่ละไฟล์
+และแยก validation ของบทความออกไปเป็น middleware ชื่อ validatePost.mjs
+
+เป้าหมายหลัก
+- ทำให้ app.mjs สั้นลงและอ่านง่ายขึ้น
+- แยก API ตามหน้าที่ เช่น posts, assignments, health, profiles
+- ใช้ middleware ตรวจข้อมูลก่อนเข้า logic สร้างหรือแก้ไขบทความ
+- ลดการเขียน validation ซ้ำใน POST และ PUT
+- ทำให้อนาคตเพิ่ม API ใหม่ได้ง่ายขึ้น
+
+โครงสร้างไฟล์ที่สำคัญ
+- app.mjs
+- routes/posts.mjs
+- routes/assignments.mjs
+- routes/health.mjs
+- routes/profiles.mjs
+- middlewares/validatePost.mjs
+- utils/db.mjs
+
+1. app.mjs คือไฟล์ตั้งค่า server หลัก
+
+ไฟล์ app.mjs ตอนนี้ไม่ได้เก็บ logic ของ posts โดยตรงแล้ว
+หน้าที่หลักของ app.mjs คือ
+- import express, cors, dotenv
+- import router แต่ละไฟล์
+- สร้าง app ด้วย express()
+- เปิด middleware หลัก เช่น express.json() และ cors()
+- mount router เข้ากับ path หลัก
+- export app ออกไปให้ api/index.js หรือ test ใช้งาน
+
+โค้ดสำคัญ:
+
+import assignmentsRouter from "./routes/assignments.mjs";
+import healthRouter from "./routes/health.mjs";
+import postsRouter from "./routes/posts.mjs";
+import profilesRouter from "./routes/profiles.mjs";
+
+ตรงนี้คือการนำ router จากไฟล์อื่นเข้ามาใช้ใน app.mjs
+
+app.use("/health", healthRouter);
+app.use("/profiles", profilesRouter);
+app.use("/assignments", assignmentsRouter);
+app.use("/posts", postsRouter);
+
+ความหมายคือ
+- ถ้า request เข้ามาที่ /health ให้ส่งต่อไปที่ healthRouter
+- ถ้า request เข้ามาที่ /profiles ให้ส่งต่อไปที่ profilesRouter
+- ถ้า request เข้ามาที่ /assignments ให้ส่งต่อไปที่ assignmentsRouter
+- ถ้า request เข้ามาที่ /posts ให้ส่งต่อไปที่ postsRouter
+
+ตัวอย่าง
+ถ้า client เรียก:
+GET /posts
+
+Express จะเริ่มจาก app.mjs
+แล้วเห็น app.use("/posts", postsRouter)
+จากนั้นจึงส่ง request ไปทำงานต่อใน routes/posts.mjs
+
+2. express.json() คือ middleware หลัก
+
+ใน app.mjs มีโค้ดนี้:
+
+app.use(express.json());
+
+หน้าที่คือแปลง JSON body ที่ client ส่งมาให้กลายเป็น req.body
+
+ตัวอย่าง client ส่งข้อมูล:
+{
+  "title": "My first post",
+  "image": "https://example.com/image.jpg",
+  "category_id": 1,
+  "description": "Short detail",
+  "content": "Full content",
+  "status_id": 1
+}
+
+หลังจากผ่าน express.json()
+เราจะอ่านข้อมูลได้จาก req.body.title, req.body.image และ field อื่น ๆ
+
+ถ้าไม่มี express.json()
+req.body อาจจะเป็น undefined และ validation จะทำงานไม่ได้ตามที่ต้องการ
+
+3. cors คือ middleware สำหรับให้ frontend เรียก API ได้
+
+ใน app.mjs มีโค้ดนี้:
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
+  })
+);
+
+หน้าที่คืออนุญาตให้ frontend จาก origin ที่กำหนดเรียก API Server ได้
+เช่น frontend ที่รันด้วย Vite บน http://localhost:5173
+
+4. routes/posts.mjs คือ router สำหรับ API บทความ
+
+ไฟล์ routes/posts.mjs ใช้จัดการ API ของ posts ทั้งหมด
+
+API ที่อยู่ในไฟล์นี้:
+- POST /posts
+- GET /posts
+- GET /posts/:postId
+- PUT /posts/:postId
+- DELETE /posts/:postId
+
+ในไฟล์นี้มีโค้ด:
+
+const router = Router();
+
+Router() คือการสร้าง router ย่อยของ Express
+เราสามารถเขียน route แบบ router.get, router.post, router.put, router.delete ได้
+
+ตอนท้ายไฟล์มี:
+
+export default router;
+
+เพื่อส่ง router กลับไปให้ app.mjs นำไป mount ด้วย app.use("/posts", postsRouter)
+
+5. POST /posts ใช้ middleware ก่อนสร้างบทความ
+
+ใน routes/posts.mjs มีโค้ด:
+
+router.post("/", postValidation, createPost);
+
+เพราะ postsRouter ถูก mount ที่ /posts แล้ว
+ดังนั้น path "/" ในไฟล์ posts.mjs จึงหมายถึง /posts
+
+ลำดับการทำงานคือ
+1. client เรียก POST /posts
+2. Express เข้า app.use("/posts", postsRouter)
+3. Express เจอ router.post("/", postValidation, createPost)
+4. เรียก postValidation ก่อน
+5. ถ้าข้อมูลผิด ส่ง 400 กลับทันที
+6. ถ้าข้อมูลถูก เรียก next()
+7. Express ไปทำ createPost ต่อ
+8. createPost insert ข้อมูลลง database
+9. ส่ง 201 Created กลับไป
+
+6. PUT /posts/:postId ก็ใช้ middleware เดียวกัน
+
+ใน routes/posts.mjs มีโค้ด:
+
+router.put("/:postId", postValidation, async (req, res) => {
+  ...
+});
+
+เพราะการแก้ไขบทความต้องรับข้อมูลชุดเดียวกับการสร้างบทความ
+จึงใช้ postValidation ตัวเดียวกันได้
+
+ข้อดีคือ
+- ไม่ต้องเขียน validation ซ้ำ
+- ถ้าอยากแก้ validation แก้แค่ไฟล์ middlewares/validatePost.mjs
+- POST และ PUT จะใช้กฎเดียวกันเสมอ
+
+7. middlewares/validatePost.mjs คือ middleware ตรวจข้อมูลบทความ
+
+ไฟล์นี้มี function หลัก:
+
+function postValidation(req, res, next) {
+  const { title, image, category_id, description, content, status_id } =
+    req.body;
+
+  ...
+
+  return next();
+}
+
+export default postValidation;
+
+หน้าที่ของ postValidation คือเช็กข้อมูลที่ client ส่งมา
+ถ้าขาด field ใด field หนึ่ง จะส่ง HTTP Status Code 400 กลับไป
+ถ้า type ไม่ถูกต้อง ก็ส่ง HTTP Status Code 400 กลับไป
+ถ้าข้อมูลถูกต้องทั้งหมด จะเรียก next()
+
+8. next() คืออะไร
+
+next() เป็น function ของ Express middleware
+ใช้บอก Express ว่า middleware นี้ทำงานเสร็จแล้ว
+ให้ไปทำ middleware หรือ handler ตัวถัดไปต่อ
+
+ตัวอย่าง:
+
+router.post("/", postValidation, createPost);
+
+ถ้า postValidation เรียก next()
+Express จะไปทำ createPost ต่อ
+
+แต่ถ้า postValidation return res.status(400).json(...)
+request จะจบที่ middleware ทันที
+createPost จะไม่ถูกเรียก
+
+9. การตรวจ required field
+
+ตัวอย่างใน validatePost.mjs:
+
+if (!title) {
+  return res.status(400).json({ message: "Title is required" });
+}
+
+ความหมายคือ
+ถ้า title ไม่มีค่า ให้หยุดการทำงานและตอบกลับด้วย 400
+
+field ที่ตรวจว่าต้องส่งเข้ามา:
+- title
+- image
+- category_id
+- description
+- content
+- status_id
+
+10. การตรวจ type ของข้อมูล
+
+ตัวอย่าง:
+
+if (typeof title !== "string") {
+  return res.status(400).json({ message: "Title must be a string" });
+}
+
+ความหมายคือ
+ถ้า title ไม่ใช่ string ให้ตอบกลับ 400
+
+type ที่ต้องการ:
+- title ต้องเป็น string
+- image ต้องเป็น string
+- category_id ต้องเป็น number
+- description ต้องเป็น string
+- content ต้องเป็น string
+- status_id ต้องเป็น number
+
+11. routes/assignments.mjs ใช้ createPost ร่วมกับ posts
+
+ไฟล์ routes/assignments.mjs มีโค้ด:
+
+import postValidation from "../middlewares/validatePost.mjs";
+import { createPost } from "./posts.mjs";
+
+router.post("/", postValidation, createPost);
+
+ความหมายคือ /assignments ยังใช้ logic สร้างบทความตัวเดียวกับ /posts
+และใช้ middleware ตรวจข้อมูลตัวเดียวกันด้วย
+
+ดังนั้น
+POST /assignments
+และ
+POST /posts
+
+จะมี validation และการสร้าง post เหมือนกัน
+
+12. routes/health.mjs
+
+ไฟล์นี้ใช้สำหรับ API ตรวจว่า server ยังทำงานอยู่
+
+GET /health
+
+ผลลัพธ์:
+{
+  "message": "OK"
+}
+
+เหมาะสำหรับใช้ทดสอบว่า server เปิดอยู่หรือไม่
+
+13. routes/profiles.mjs
+
+ไฟล์นี้เป็น API ตัวอย่างสำหรับ profile
+
+GET /profiles
+
+ผลลัพธ์:
+{
+  "data": {
+    "name": "john",
+    "age": 20
+  }
+}
+
+14. Flow รวมของ POST /posts
+
+Client
+ส่ง POST /posts พร้อม JSON body
+
+app.mjs
+รับ request และผ่าน express.json()
+
+app.mjs
+ส่งต่อไปที่ postsRouter เพราะ path เริ่มด้วย /posts
+
+routes/posts.mjs
+เจอ router.post("/", postValidation, createPost)
+
+middlewares/validatePost.mjs
+ตรวจ required field และ type
+
+ถ้าข้อมูลผิด
+ส่ง 400 Bad Request กลับไป
+
+ถ้าข้อมูลถูก
+เรียก next()
+
+routes/posts.mjs
+createPost ทำ INSERT INTO posts
+
+database
+บันทึกข้อมูล
+
+server
+ส่ง 201 Created กลับไป
+
+15. ตัวอย่าง request ที่ถูกต้อง
+
+POST /posts
+
+{
+  "title": "My first article",
+  "image": "https://example.com/post.jpg",
+  "category_id": 1,
+  "description": "This is short description",
+  "content": "This is full content",
+  "status_id": 1
+}
+
+ผลลัพธ์ที่คาดหวัง:
+
+{
+  "message": "Created post successfully"
+}
+
+Status Code:
+201 Created
+
+16. ตัวอย่าง request ที่ผิด
+
+กรณีไม่ส่ง title:
+
+{
+  "image": "https://example.com/post.jpg",
+  "category_id": 1,
+  "description": "This is short description",
+  "content": "This is full content",
+  "status_id": 1
+}
+
+ผลลัพธ์:
+
+{
+  "message": "Title is required"
+}
+
+Status Code:
+400 Bad Request
+
+กรณี category_id เป็น string:
+
+{
+  "title": "My first article",
+  "image": "https://example.com/post.jpg",
+  "category_id": "1",
+  "description": "This is short description",
+  "content": "This is full content",
+  "status_id": 1
+}
+
+ผลลัพธ์:
+
+{
+  "message": "Category ID must be a number"
+}
+
+Status Code:
+400 Bad Request
+
+17. ทำไมต้องแยก Router
+
+ถ้าเขียน API ทุกตัวใน app.mjs
+ไฟล์ app.mjs จะยาวขึ้นเรื่อย ๆ
+เวลาเพิ่ม API ใหม่หรือแก้ bug จะหาโค้ดยาก
+
+การแยก Router ช่วยให้
+- app.mjs อ่านง่าย
+- แยก API ตามหมวดหมู่
+- routes/posts.mjs ดูแลเฉพาะเรื่องบทความ
+- routes/health.mjs ดูแลเฉพาะ health check
+- routes/profiles.mjs ดูแลเฉพาะ profile
+- เพิ่ม routes ใหม่ในอนาคตได้ง่าย
+
+18. ทำไมต้องแยก Middleware
+
+validation เป็นงานที่ควรเกิดก่อน handler หลัก
+ถ้าข้อมูลผิด ไม่ควรให้ code ไปถึง database query
+
+การแยก middleware ช่วยให้
+- handler หลักสะอาดขึ้น
+- validation ใช้ซ้ำได้
+- POST และ PUT ใช้กฎเดียวกัน
+- อ่าน flow ได้ชัดว่า route นี้ต้อง validate ก่อน
+
+19. ลำดับแนะนำในการอ่านโค้ด
+
+1. เปิด app.mjs ก่อน เพื่อดูว่า server mount router อะไรบ้าง
+2. เปิด routes/posts.mjs เพื่อดู API ของบทความ
+3. ดู router.post("/", postValidation, createPost)
+4. เปิด middlewares/validatePost.mjs เพื่อดู validation rule
+5. กลับมาดู createPost ใน routes/posts.mjs เพื่อดูการ insert database
+6. ดู router.put("/:postId", postValidation, ...)
+7. ดู routes/assignments.mjs เพื่อดูการ reuse createPost
+8. ดู routes/health.mjs และ routes/profiles.mjs เพื่อเข้าใจ router ไฟล์เล็ก
+
+20. สรุปสั้น
+
+Assignment นี้ทำให้ backend มีโครงสร้างชัดขึ้น
+app.mjs ใช้ประกอบ server
+routes ใช้เก็บ API แต่ละกลุ่ม
+middlewares ใช้ตรวจข้อมูลก่อนเข้า handler หลัก
+
+สำหรับบทความ
+POST /posts และ PUT /posts/:postId ต้องผ่าน postValidation ก่อนเสมอ
+ถ้าข้อมูลผิดจะตอบ 400
+ถ้าข้อมูลถูกจึงไปทำงานกับ database ต่อ
