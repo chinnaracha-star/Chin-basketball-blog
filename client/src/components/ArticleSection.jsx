@@ -10,7 +10,9 @@ import {
   SelectValue,
 } from "./ui/select";
 
-const API_URL = "https://blog-post-project-api.vercel.app/posts";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const API_URL = `${API_BASE_URL}/posts`;
 const POSTS_PER_PAGE = 6;
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
