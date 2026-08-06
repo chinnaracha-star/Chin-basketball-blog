@@ -18,7 +18,9 @@ import {
 } from "../components/ui/alert-dialog";
 import NotFoundPage from "./NotFoundPage";
 
-const API_URL = "https://blog-post-project-api.vercel.app/posts";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const API_URL = `${API_BASE_URL}/posts`;
 
 // --- Date Formatting: แปลงวันที่บทความให้อยู่ในรูปแบบ Day Month Year ---
 function formatDate(date) {
@@ -127,7 +129,10 @@ function PostPage() {
               </div>
 
               <aside className="post-author-card">
-                <div className="post-avatar post-avatar-large" aria-hidden="true">
+                <div
+                  className="post-avatar post-avatar-large"
+                  aria-hidden="true"
+                >
                   {post.author.charAt(0)}
                 </div>
                 <h2>{post.author}</h2>
@@ -193,10 +198,7 @@ function PostPage() {
                   readOnly
                   onClick={() => setShowLoginDialog(true)}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginDialog(true)}
-                >
+                <button type="button" onClick={() => setShowLoginDialog(true)}>
                   Send
                 </button>
               </div>
