@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 import { getStoredToken } from "./authApi";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const API_BASE_URL = getApiBaseUrl();
 
 export async function updateProfileOnServer({ name, username, imageFile }) {
   const formData = new FormData();

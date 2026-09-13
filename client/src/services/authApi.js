@@ -1,6 +1,7 @@
 import axios from "axios";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const API_BASE_URL = getApiBaseUrl();
 const TOKEN_KEY = "chin-basketball-blog-access-token";
 
 const authApi = axios.create({ baseURL: `${API_BASE_URL}/auth` });

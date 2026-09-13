@@ -2,12 +2,16 @@ import { Link } from "react-router-dom";
 
 function BlogCard(props) {
   // --- Date Formatting: แปลงวันที่จาก API ให้อยู่ในรูปแบบอ่านง่าย ---
-  const formattedDate = new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(props.date));
+  const parsedDate = props.date ? new Date(props.date) : null;
+  const formattedDate =
+    parsedDate && !Number.isNaN(parsedDate.getTime())
+      ? new Intl.DateTimeFormat("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(parsedDate)
+      : "";
 
   return (
     <div className="flex flex-col gap-4">

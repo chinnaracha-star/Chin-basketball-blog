@@ -16,11 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 import NotFoundPage from "./NotFoundPage";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-const API_URL = `${API_BASE_URL}/posts`;
+const API_URL = `${getApiBaseUrl()}/posts`;
 
 // --- Date Formatting: แปลงวันที่บทความให้อยู่ในรูปแบบ Day Month Year ---
 function formatDate(date) {

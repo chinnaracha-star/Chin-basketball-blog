@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 const samplePost = {
   title: "Mastering Time Management: Techniques for Success",

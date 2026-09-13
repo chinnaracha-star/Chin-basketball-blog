@@ -13,15 +13,42 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(express.json());
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+
+  const configured = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://chin-basketball-blog.vercel.app",
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
+  if (configured.includes(origin)) return true;
+
+  // Allow Vercel production / preview aliases for this project.
+  try {
+    const { hostname } = new URL(origin);
+    return (
+      hostname === "chin-basketball-blog.vercel.app" ||
+      hostname.endsWith("-chin-basketball-blog.vercel.app") ||
+      /^chin-basketball-blog(-[a-z0-9-]+)?\.vercel\.app$/i.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      process.env.FRONTEND_URL,
-    ].filter(Boolean),
+    origin(origin, callback) {
+      // Never throw here — throwing becomes a 500 and breaks article loading.
+      callback(null, isAllowedOrigin(origin));
+    },
   }),
 );
 
