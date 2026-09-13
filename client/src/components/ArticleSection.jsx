@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BlogCard from "./BlogCard";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 import {
   Select,
   SelectContent,
@@ -10,11 +11,18 @@ import {
   SelectValue,
 } from "./ui/select";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-const API_URL = `${API_BASE_URL}/posts`;
+const API_URL = `${getApiBaseUrl()}/posts`;
 const POSTS_PER_PAGE = 6;
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
+
+function isRequestCanceled(error) {
+  return (
+    axios.isCancel?.(error) ||
+    error?.code === "ERR_CANCELED" ||
+    error?.name === "CanceledError" ||
+    error?.name === "AbortError"
+  );
+}
 
 function ArticleSection() {
   // --- useState: เก็บข้อมูลที่เปลี่ยนแปลงและสั่งให้ UI แสดงผลใหม่ ---
@@ -66,15 +74,16 @@ function ArticleSection() {
         });
 
         const { posts: newPosts, currentPage, totalPages } = response.data;
+        const nextPosts = Array.isArray(newPosts) ? newPosts : [];
 
         // หน้าแรกแทนที่ข้อมูลเดิม ส่วนหน้าถัดไปนำข้อมูลมาต่อท้าย
         setPosts((previousPosts) =>
-          page === 1 ? newPosts : [...previousPosts, ...newPosts],
+          page === 1 ? nextPosts : [...previousPosts, ...nextPosts],
         );
         //เช็กว่ายังมีหน้าถัดไปไหม
-        setHasMore(currentPage < totalPages);
+        setHasMore(Number(currentPage) < Number(totalPages));
       } catch (requestError) {
-        if (!axios.isCancel(requestError)) {
+        if (!isRequestCanceled(requestError)) {
           console.error("Error fetching posts:", requestError);
           setError("Unable to load articles. Please try again.");
         }
