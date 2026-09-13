@@ -5,10 +5,7 @@ import protectAdmin from "../middlewares/protectAdmin.mjs";
 import uploadPostImage from "../middlewares/uploadPostImage.mjs";
 import postValidation from "../middlewares/validatePost.mjs";
 import db from "../utils/db.mjs";
-import {
-  createSupabaseClient,
-  getBearerToken,
-} from "../utils/supabase.mjs";
+import { createSupabaseClient, getBearerToken } from "../utils/supabase.mjs";
 
 const router = Router();
 const PAGE_SIZE = 6;
@@ -28,7 +25,7 @@ function getPostSelectQuery() {
       statuses.status,
       posts.likes_count,
       posts.likes_count AS likes,
-      'john' AS author
+      'Chin' AS author
     FROM posts
     LEFT JOIN categories ON posts.category_id = categories.id
     LEFT JOIN statuses ON posts.status_id = statuses.id
@@ -46,7 +43,8 @@ function getPositiveInteger(value, fallback) {
 }
 
 export const createPost = async (req, res) => {
-  const { title, image, category_id, description, content, status_id } = req.body;
+  const { title, image, category_id, description, content, status_id } =
+    req.body;
 
   try {
     await db.query(
@@ -54,7 +52,7 @@ export const createPost = async (req, res) => {
         (title, image, category_id, description, content, status_id)
        VALUES
         ($1, $2, $3, $4, $5, $6)`,
-      [title, image, category_id, description, content, status_id]
+      [title, image, category_id, description, content, status_id],
     );
 
     return res.status(201).json({
@@ -97,8 +95,7 @@ async function createPostWithImage(req, res) {
     return res.status(400).json({ message: validationError });
   }
 
-  const bucketName =
-    process.env.SUPABASE_STORAGE_BUCKET || "my-personal-blog";
+  const bucketName = process.env.SUPABASE_STORAGE_BUCKET || "my-personal-blog";
   const extension = path.extname(file.originalname).toLowerCase();
   const filePath = `posts/${Date.now()}_${randomUUID()}${extension}`;
   const supabase = createSupabaseClient(getBearerToken(req));
@@ -202,7 +199,7 @@ router.get("/", async (req, res) => {
         LEFT JOIN statuses ON posts.status_id = statuses.id
         ${whereClause}
       `,
-      values
+      values,
     );
 
     const totalPosts = countResult.rows[0].total;
@@ -216,7 +213,7 @@ router.get("/", async (req, res) => {
         LIMIT $${values.length - 1}
         OFFSET $${values.length}
       `,
-      values
+      values,
     );
 
     return res.status(200).json({
@@ -241,7 +238,7 @@ router.get("/:postId", async (req, res) => {
         ${getPostSelectQuery()}
         WHERE posts.id = $1
       `,
-      [req.params.postId]
+      [req.params.postId],
     );
 
     if (!result.rows[0]) {
@@ -261,7 +258,8 @@ router.get("/:postId", async (req, res) => {
 });
 
 router.put("/:postId", postValidation, async (req, res) => {
-  const { title, image, category_id, description, content, status_id } = req.body;
+  const { title, image, category_id, description, content, status_id } =
+    req.body;
 
   try {
     const result = await db.query(
@@ -285,7 +283,7 @@ router.put("/:postId", postValidation, async (req, res) => {
         content,
         status_id,
         req.params.postId,
-      ]
+      ],
     );
 
     if (!result.rows[0]) {
@@ -314,7 +312,7 @@ router.delete("/:postId", async (req, res) => {
         WHERE id = $1
         RETURNING id
       `,
-      [req.params.postId]
+      [req.params.postId],
     );
 
     if (!result.rows[0]) {
